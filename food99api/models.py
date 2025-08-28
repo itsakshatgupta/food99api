@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
-# Create your models here.
+from cloudinary.models import CloudinaryField # Import CloudinaryField
 
 # Menu Category 
 class Category(models.Model):
@@ -19,7 +18,9 @@ class MenuItem(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     price = models.DecimalField(max_digits=8, decimal_places=2)
-    image = models.ImageField(upload_to='menu_images/', blank=True, null=True)
+    # Use CloudinaryField for automatic uploads to Cloudinary
+    # You can specify a folder to organize your images on Cloudinary
+    image = CloudinaryField('image', folder='menu_images/', blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='items')
 
     def __str__(self):
