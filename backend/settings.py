@@ -1,20 +1,16 @@
-# Cloudinary configuration
+# settings.py
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-
-from pathlib import Path
+from cloudinary_storage.storage import MediaCloudinaryStorage
 import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
-DEBUG = os.getenv("DEBUG", "False") == "True"
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+SECRET_KEY = "fallback-secret-key"
+DEBUG = True
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 INSTALLED_APPS = [
     'corsheaders',
@@ -68,21 +64,18 @@ DATABASES = {
     }
 }
 
-cloudinary.config(
-    cloud_name='Folder mode',
-    api_key='949178684912937',
-    api_secret='aIknh9wAy6uRaCE_uA6J8uMGpoY'
-)
-
-# Media settings
+# Cloudinary storage
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# Static & Media
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dbe8vybbp',
+    'API_KEY': '949178684912937',
+    'API_SECRET': 'aIknh9wAy6uRaCE_uA6J8uMGpoY',
+}
+
+# Static files
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
