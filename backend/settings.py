@@ -1,20 +1,21 @@
-# settings.py
+# Cloudinary configuration
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-from cloudinary_storage.storage import MediaCloudinaryStorage
-import os
+
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-# Load environment variables from a .env file if it exists (for local development)
-from dotenv import load_dotenv
-load_dotenv()
-# Use environment variables with fallbacks for local dev
-SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-x_#3(fg6zo4z_#_l&%4komzgxw4vz()x%pt@xk*2q^witd4j@o")
-DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
-ALLOWED_HOSTS_STR = os.environ.get("ALLOWED_HOSTS", "food99api.onrender.com,127.0.0.1,localhost")
-ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STR.split(',')]
+
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
+DEBUG = os.getenv("DEBUG", "False") == "True"
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+
 INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.admin',
@@ -71,22 +72,21 @@ DATABASES = {
     }
 }
 
-
-if os.environ.get('CLOUDINARY_URL'):
-    # Cloudinary will automatically parse CLOUDINARY_URL
-    pass
-else:
-    # Use individual variables if the URL is not set
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
-        'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
-        'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
-    }
-# Cloudinary storage
+# Media storage
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-# Static files
+
+# Cloudinary settings
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dbe8vybbp',
+    'API_KEY': '949178684912937',
+    'API_SECRET': 'aIknh9wAy6uRaCE_uA6J8uMGpoY',
+}
+# Static & Media
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+# MEDIA_URL = "/media/"
+# MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
