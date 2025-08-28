@@ -1,3 +1,8 @@
+# Cloudinary configuration
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -18,6 +23,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary',
+    'cloudinary_storage',
     'django.contrib.staticfiles',
     'rest_framework',
     'food99api',
@@ -60,6 +67,15 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+cloudinary.config(
+    cloud_name='Folder mode',
+    api_key='949178684912937',
+    api_secret='aIknh9wAy6uRaCE_uA6J8uMGpoY'
+)
+
+# Media settings
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Static & Media
 STATIC_URL = "/static/"
