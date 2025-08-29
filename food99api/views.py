@@ -1,10 +1,17 @@
 from django.shortcuts import render
-from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import viewsets
 from rest_framework.response import Response
 from .models import MenuItem, Cart
 from .serializers import MenuItemSerializer, CartSerializer
+from .serializers import CustomUserSerializer
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def me(request):
+    serializer = CustomUserSerializer(request.user)
+    return Response(serializer.data)
 
 # Create your views here.
 from django.http import HttpResponse
