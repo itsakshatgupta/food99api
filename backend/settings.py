@@ -29,6 +29,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'food99api',
 ]
+# Tell Django to use the custom user model
+AUTH_USER_MODEL = 'food99api.CustomUser'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
