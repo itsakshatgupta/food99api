@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import menu_by_category, CartViewSet
+from .views import menu_by_category, CartViewSet,SignupView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 
@@ -12,5 +12,6 @@ urlpatterns = [
     path('', include(router.urls)),
     path('menu/', menu_by_category),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/signup/', SignupView.as_view(), name='signup'),
     
 ]

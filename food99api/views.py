@@ -6,7 +6,14 @@ from rest_framework.response import Response
 from .models import MenuItem, Cart
 from .serializers import MenuItemSerializer, CartSerializer
 from .serializers import CustomUserSerializer
+from .serializers import SignupSerializer
+from .models import CustomUser
+from rest_framework import generics
 
+
+class SignupView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = SignupSerializer
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me(request):
