@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from .models import MenuItem, Cart
 from .serializers import MenuItemSerializer, CartSerializer
 
+
 # Create your views here.
 from django.http import HttpResponse
 from .models import Category
