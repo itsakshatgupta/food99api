@@ -2,6 +2,19 @@ from rest_framework import serializers
 from .models import MenuItem, Cart, CartItem
 from .models import Category
 from .models import CustomUser
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    profile_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'phone_number', 'profile_image']
+
+    def get_profile_image(self, obj):
+        if obj.profile_image:
+            return obj.profile_image.url  # full Cloudinary URL
+        return None
+    
 class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
