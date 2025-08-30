@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import MenuItem, Cart, CartItem
-from .models import Category
+from .models import Category, Order
 from .models import CustomUser
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -16,7 +16,7 @@ class SignupSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password'],
             phone_number=validated_data.get('phone_number'),
-            profile_image=validated_data.get('profile_image')
+            profile_image=validated_data.get('profile_image') 
         )
         return user
 
@@ -55,3 +55,8 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = ['id', 'user', 'items', 'created_at']
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['id', 'order_id', 'amount', 'payment_status', 'created_at']

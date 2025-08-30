@@ -87,6 +87,11 @@ CLOUDINARY_STORAGE = {
     'API_KEY': '949178684912937',
     'API_SECRET': 'aIknh9wAy6uRaCE_uA6J8uMGpoY',
 }
+
+CASHFREE_APP_ID = '1062978b149033d08a10b1e4a4e8792601'
+CASHFREE_SECRET_KEY = 'cfsk_ma_prod_f8aa9c294c60f7f95d350f89996aa90f_f06b997c'
+CASHFREE_API_URL = 'https://api.cashfree.com/pg' # Use the production URL
+
 # Static & Media
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
