@@ -16,10 +16,32 @@ from .serializers import CustomUserSerializer
 from .serializers import SignupSerializer
 from .models import CustomUser
 from rest_framework import generics
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import generics
+from .models import CustomUser
+from .serializers import SignupSerializer, CustomUserSerializer
+from rest_framework.response import Response
 
 class SignupView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = SignupSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        # Generate JWT tokens for the new user
+        refresh = RefreshToken.for_user(user)
+        access = refresh.access_token
+
+        # Include user data + tokens in response
+        user_data = CustomUserSerializer(user).data
+        return Response({
+            "user": user_data,
+            "refresh": str(refresh),
+            "access": str(access)
+        })
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
