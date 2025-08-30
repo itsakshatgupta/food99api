@@ -88,9 +88,9 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': 'aIknh9wAy6uRaCE_uA6J8uMGpoY',
 }
 
-CASHFREE_APP_ID = '1062978b149033d08a10b1e4a4e8792601'
-CASHFREE_SECRET_KEY = 'cfsk_ma_prod_f8aa9c294c60f7f95d350f89996aa90f_f06b997c'
-CASHFREE_API_URL = 'https://api.cashfree.com/pg' # Use the production URL
+CASHFREE_APP_ID = os.environ.get('CASHFREE_APP_ID')
+CASHFREE_SECRET_KEY = os.environ.get('CASHFREE_SECRET_KEY')
+CASHFREE_API_URL = 'https://api.cashfree.com/pg'
 
 # Static & Media
 STATIC_URL = "/static/"
