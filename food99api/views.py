@@ -217,7 +217,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
         Remove an item from cart
         """
         try:
-            cart_item = self.get_queryset().get(pk=pk)
+            cart_item = self.get_queryset().get(id=pk)
             cart_item.delete()
             return Response({"message": "Item removed"}, status=status.HTTP_204_NO_CONTENT)
         except CartItem.DoesNotExist:
