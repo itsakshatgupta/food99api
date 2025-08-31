@@ -204,7 +204,8 @@ class CartItemViewSet(viewsets.ModelViewSet):
         Update quantity of a cart item
         """
         try:
-            cart_item = self.get_queryset().get(menu_item__id=pk)
+            cart_item = self.get_queryset().get(id=pk)
+            print('cart;', cart_item)
         except CartItem.DoesNotExist:
             return Response({"error": "Cart item not found"}, status=status.HTTP_404_NOT_FOUND)
 
