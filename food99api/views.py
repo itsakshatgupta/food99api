@@ -49,6 +49,7 @@ class InitiatePaymentView(APIView):
         # Create a new order in your database
         order = Order.objects.create(
             user=user,
+            cart=cart,
             order_id=order_id,
             amount=total_amount,
             payment_status='PENDING'
@@ -158,7 +159,86 @@ class SignupView(generics.CreateAPIView):
             "refresh": str(refresh),
             "access": str(access)
         })
-    
+
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Cart, CartItem, MenuItem
+from .serializers import CartSerializer, CartItemSerializer
+
+class CartItemViewSet(viewsets.ModelViewSet):
+    """
+    RESTful API for managing cart items
+    """
+    serializer_class = CartItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return CartItem.objects.filter(cart__user=user)
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        menu_item_id = request.data.get("menu_item_id")
+        quantity = int(request.data.get("quantity", 1))
+
+        try:
+            menu_item = MenuItem.objects.get(id=menu_item_id)
+        except MenuItem.DoesNotExist:
+            return Response({"error": "Menu item not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        cart, _ = Cart.objects.get_or_create(user=user)
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, menu_item=menu_item)
+
+        if not created:
+            cart_item.quantity += quantity
+        else:
+            cart_item.quantity = quantity
+        cart_item.save()
+
+        return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, pk=None, *args, **kwargs):
+        """
+        Update quantity of a cart item
+        """
+        try:
+            cart_item = self.get_queryset().get(menu_item__id=pk)
+        except CartItem.DoesNotExist:
+            return Response({"error": "Cart item not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        cart_item.quantity = int(request.data.get("quantity", cart_item.quantity))
+        cart_item.save()
+        return Response(CartItemSerializer(cart_item).data)
+
+    def destroy(self, request, pk=None, *args, **kwargs):
+        """
+        Remove an item from cart
+        """
+        try:
+            cart_item = self.get_queryset().get(pk=pk)
+            cart_item.delete()
+            return Response({"message": "Item removed"}, status=status.HTTP_204_NO_CONTENT)
+        except CartItem.DoesNotExist:
+            return Response({"error": "Cart item not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=["get"])
+    def mycart(self, request):
+        """
+        View entire cart with total
+        """
+        user = request.user
+        try:
+            cart = Cart.objects.get(user=user)
+        except Cart.DoesNotExist:
+            return Response({"items": [], "total": 0})
+
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
+
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me(request):
@@ -174,10 +254,13 @@ def menu_by_category(request):
     serializer = CategorySerializer(categories, many=True)
     return Response(serializer.data)
 
-class CartViewSet(viewsets.ModelViewSet):
-    queryset = Cart.objects.all()
-    serializer_class = CartSerializer
-
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def CartViewSet(request):
+    print(request.user)
+    cart = Cart.objects.get(user=CustomUser.objects.get(username='akshat1'))
+    serializer = CartSerializer(cart)
+    return Response(serializer.data)   # returns JSON
 
 @api_view(['GET'])
 def menu_items(request):

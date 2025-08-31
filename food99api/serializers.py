@@ -33,9 +33,16 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return None
 
 class MenuItemSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = MenuItem
         fields = ['id', 'name', 'description', 'price', 'image']
+
+    def get_image(self, obj):
+        if obj.image:
+            return obj.image.url  # full Cloudinary URL
+        return None
 
 class CategorySerializer(serializers.ModelSerializer):
     items = MenuItemSerializer(many=True)  # nested items
@@ -45,16 +52,18 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'items']
 
 class CartItemSerializer(serializers.ModelSerializer):
+    menu_item = MenuItemSerializer()  # nested serializer
+
     class Meta:
         model = CartItem
-        fields = '__all__'
+        fields = ['id', 'quantity', 'menu_item']  # no need for 'cart'
 
 class CartSerializer(serializers.ModelSerializer):
-    items = CartItemSerializer(many=True, source='cartitem_set')
+    items = CartItemSerializer(source='cartitem_set', many=True)
 
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'items', 'created_at']
+        fields = '__all__'   # includes id, user, created_at, and items
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
