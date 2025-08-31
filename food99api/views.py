@@ -258,7 +258,7 @@ def menu_by_category(request):
 @permission_classes([IsAuthenticated])
 def CartViewSet(request):
     print(request.user)
-    cart = Cart.objects.get(user=CustomUser.objects.get(username='akshat1'))
+    cart = Cart.objects.get(user=CustomUser.objects.get(username=request.user))
     serializer = CartSerializer(cart)
     return Response(serializer.data)   # returns JSON
 
