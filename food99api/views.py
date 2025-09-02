@@ -239,26 +239,29 @@ class CartItemViewSet(viewsets.ModelViewSet):
         items = []
         total = 0
 
-        for cart_item in cart.cartitem_set.all():  # assuming a related_name="items"
+        for cart_item in cart.cartitem_set.all():  # through model
             menu_price = cart_item.menu_item.price
-            variant_price = cart_item.menu_item.variant.price if cart_item.menu_item.variant else 0
-            final_price = (menu_price + variant_price) * cart_item.quantity
+            line_total = menu_price * cart_item.quantity
 
             items.append({
-                "menu_item": cart_item.menu_item.name,
-                "variant": cart_item.menu_item.variant.name if cart_item.menu_item.variant else None,
+                "id": cart_item.id,
                 "quantity": cart_item.quantity,
-                "price_each": menu_price + variant_price,
-                "total_price": final_price,
+                "menu_item": {
+                    "id": cart_item.menu_item.id,
+                    "name": cart_item.menu_item.name,
+                    "description": cart_item.menu_item.description,
+                    "image": str(cart_item.menu_item.image.url) if cart_item.menu_item.image else None,
+                    "price": str(menu_price),
+                },
+                "line_total": str(line_total),
             })
 
-            total += final_price
+            total += line_total
 
         return Response({
             "items": items,
-            "total": total
+            "total": str(total),
         })
-
 
 
 @api_view(['GET'])
