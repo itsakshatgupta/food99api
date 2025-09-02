@@ -239,13 +239,13 @@ class CartItemViewSet(viewsets.ModelViewSet):
         items = []
         total = 0
 
-        for cart_item in cart.items.all():  # assuming a related_name="items"
-            menu_price = cart_item.price
+        for cart_item in cart.cartitem_set.all():  # assuming a related_name="items"
+            menu_price = cart_item.menu_item.price
             variant_price = cart_item.variant.price if cart_item.variant else 0
             final_price = (menu_price + variant_price) * cart_item.quantity
 
             items.append({
-                "menu_item": cart_item.name,
+                "menu_item": cart_item.menu_item.name,
                 "variant": cart_item.variant.name if cart_item.variant else None,
                 "quantity": cart_item.quantity,
                 "price_each": menu_price + variant_price,
