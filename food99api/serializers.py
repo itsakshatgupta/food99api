@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MenuItem, Cart, CartItem
+from .models import MenuItem, Cart, CartItem, MenuItemVariant
 from .models import Category, Order
 from .models import CustomUser
 
@@ -32,16 +32,26 @@ class CustomUserSerializer(serializers.ModelSerializer):
             return obj.profile_image.url  # full Cloudinary URL
         return None
 
+# Nested serializer for the variant with its specific price
+class MenuItemVariantSerializer(serializers.ModelSerializer):
+    variant_name = serializers.CharField(source='variant.name')  # show variant name
+
+    class Meta:
+        model = MenuItemVariant
+        fields = ['variant_name', 'price']
+
+
 class MenuItemSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    variant = MenuItemVariantSerializer(source='menuitemvariant_set', many=True)
 
     class Meta:
         model = MenuItem
-        fields = ['id', 'name', 'description', 'price', 'image']
+        fields = ['id', 'name', 'description', 'image', 'variant']
 
     def get_image(self, obj):
         if obj.image:
-            return obj.image.url  # full Cloudinary URL
+            return obj.image.url
         return None
 
 class CategorySerializer(serializers.ModelSerializer):

@@ -22,6 +22,14 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+# Menu Variant
+class MenuVariant(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+    extra = models.TextField()
+
+    def __str__(self):
+        return self.name
 # Menu Item
 class MenuItem(models.Model):
     name = models.CharField(max_length=100)
@@ -29,10 +37,22 @@ class MenuItem(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2)
     image = CloudinaryField('image', folder='menu_images/', blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='items')
+    variant = models.ManyToManyField(MenuVariant, blank=True)  # <-- updated 
 
     def __str__(self):
         return self.name
+    
+# Through model to store price per variant per menu item
+class MenuItemVariant(models.Model):
+    menu_item = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
+    variant = models.ForeignKey(MenuVariant, on_delete=models.CASCADE)
+    price = models.DecimalField(max_digits=8, decimal_places=2)  # price specific to this item+variant
 
+    class Meta:
+        unique_together = ('menu_item', 'variant')  # one variant per item
+
+    def __str__(self):
+        return f"{self.menu_item.name} - {self.variant.name} : {self.price}"
 # Cart
 class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # <-- updated

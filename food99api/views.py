@@ -1,3 +1,9 @@
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Cart, CartItem, MenuItem
+from .serializers import CartSerializer, CartItemSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import MenuItem
@@ -160,12 +166,6 @@ class SignupView(generics.CreateAPIView):
             "access": str(access)
         })
 
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from .models import Cart, CartItem, MenuItem
-from .serializers import CartSerializer, CartItemSerializer
 
 class CartItemViewSet(viewsets.ModelViewSet):
     """

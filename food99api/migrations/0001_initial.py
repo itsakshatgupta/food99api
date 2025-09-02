@@ -74,6 +74,7 @@ class Migration(migrations.Migration):
                 ('price', models.DecimalField(decimal_places=2, max_digits=8)),
                 ('image', cloudinary.models.CloudinaryField(blank=True, max_length=255, null=True, verbose_name='image')),
                 ('category', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='items', to='food99api.category')),
+                ('variant', models.ManyToManyField(blank=True, through='food99api.MenuItemVariant', to='food99api.menuvariant')),
             ],
         ),
         migrations.CreateModel(
