@@ -238,11 +238,11 @@ class CartItemViewSet(viewsets.ModelViewSet):
         serializer = CartSerializer(cart)
         items = []
         total = 0
-
-        for cart_item in cart.cartitem_set.all():  # through model
-            menu_price = cart_item.menu_item.price
-            line_total = menu_price * cart_item.quantity
-
+    
+        for cart_item in cart.cartitem_set.all():
+            base_price = cart_item.menu_item.price
+            line_total = base_price * cart_item.quantity
+    
             items.append({
                 "id": cart_item.id,
                 "quantity": cart_item.quantity,
@@ -251,18 +251,17 @@ class CartItemViewSet(viewsets.ModelViewSet):
                     "name": cart_item.menu_item.name,
                     "description": cart_item.menu_item.description,
                     "image": str(cart_item.menu_item.image.url) if cart_item.menu_item.image else None,
-                    "price": str(menu_price),
+                    "price": str(base_price),
+                    "variants": list(cart_item.menu_item.variant.values("id", "name", "price")),  # show all possible variants
                 },
                 "line_total": str(line_total),
             })
-
             total += line_total
-
+    
         return Response({
             "items": items,
             "total": str(total),
         })
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
