@@ -236,13 +236,26 @@ class CartItemViewSet(viewsets.ModelViewSet):
             return Response({"items": [], "total": 0})
 
         serializer = CartSerializer(cart)
-        # Calculate total here
+        items = []
         total = 0
-        for item in cart.items.all():  # assuming Cart -> CartItem relation
-            total += item.quantity * item.variant.price  # variant price is safe from DB
+
+        for cart_item in cart.items.all():  # assuming a related_name="items"
+            menu_price = cart_item.menu_item.price
+            variant_price = cart_item.variant.price if cart_item.variant else 0
+            final_price = (menu_price + variant_price) * cart_item.quantity
+
+            items.append({
+                "menu_item": cart_item.menu_item.name,
+                "variant": cart_item.variant.name if cart_item.variant else None,
+                "quantity": cart_item.quantity,
+                "price_each": menu_price + variant_price,
+                "total_price": final_price,
+            })
+
+            total += final_price
 
         return Response({
-            "items": serializer.data,
+            "items": items,
             "total": total
         })
 
