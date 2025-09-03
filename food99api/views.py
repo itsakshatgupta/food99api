@@ -24,7 +24,7 @@ class CreateOrderView(APIView):
         serializer = CustomUserSerializer(request.user)
         print('ss', serializer.data)
         order_id = str(uuid.uuid4())
-        amount = request.data.get("amount", 10)  # you can calculate from cart
+        amount = request.data.get("amount", 1)  # you can calculate from cart
         
         headers = {
             "accept": "application/json",
