@@ -20,52 +20,29 @@ CASHFREE_BASE_URL = "https://api.cashfree.com/pg"  # use sandbox for testing
 
 class CreateOrderView(APIView):
     def post(self, request):
-            
-            base_price = cart_item.menu_item.price
-            line_total = base_price * cart_item.quantity
-    
-            items.append({
-                "id": cart_item.id,
-                "quantity": cart_item.quantity,
-                "menu_item": {
-                    "id": cart_item.menu_item.id,
-                    "name": cart_item.menu_item.name,
-                    "description": cart_item.menu_item.description,
-                    "image": str(cart_item.menu_item.image.url) if cart_item.menu_item.image else None,
-                    "price": str(base_price),
-                    "variants": list(cart_item.menu_item.variant.values("id", "name", "price")),  # show all possible variants
-                },
-                "line_total": str(line_total),
-            })
-            total += line_total
-            serializer = CustomUserSerializer(request.user)
-            print('ss', serializer.data)
-            order_id = str(uuid.uuid4())
-            amount = request.data.get("amount", 1)  # you can calculate from cart
-
-            headers = {
-                "accept": "application/json",
-                "x-client-id": settings.CASHFREE_APP_ID,
-                "x-client-secret": settings.CASHFREE_SECRET_KEY,
-                "x-api-version": "2022-09-01",
-                "Content-Type": "application/json",
-            }
-
-            payload = {
-                "order_id": order_id,
-                "order_amount": CartItemViewSet.mycart(request=request),
-                "order_currency": "INR",
-                "customer_details": {
-                    "customer_id": "cust_" + str(uuid.uuid4()),
-                    "customer_email": 'akshatguptanov@gmail.com',
-                    "customer_phone": '8881316612',
-                },
-            }
-
-            res = requests.post(f"{CASHFREE_BASE_URL}/orders", headers=headers, json=payload)
-
-            return Response(res.json())
-
+        serializer = CustomUserSerializer(request.user)
+        print('ss', serializer.data)
+        order_id = str(uuid.uuid4())
+        amount = request.data.get("amount", 1)  # you can calculate from cart
+        headers = {
+            "accept": "application/json",
+            "x-client-id": settings.CASHFREE_APP_ID,
+            "x-client-secret": settings.CASHFREE_SECRET_KEY,
+            "x-api-version": "2022-09-01",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "order_id": order_id,
+            "order_amount": CartItemViewSet.mycart(request=request),
+            "order_currency": "INR",
+            "customer_details": {
+                "customer_id": "cust_" + str(uuid.uuid4()),
+                "customer_email": 'akshatguptanov@gmail.com',
+                "customer_phone": '8881316612',
+            },
+        }
+        res = requests.post(f"{CASHFREE_BASE_URL}/orders", headers=headers, json=payload)
+        return Response(res.json())
 @method_decorator(csrf_exempt, name='dispatch')
 class VerifyPaymentView(APIView):
     # This view can be used as a webhook endpoint or for manual verification
