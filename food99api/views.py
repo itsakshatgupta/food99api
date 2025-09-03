@@ -52,6 +52,7 @@ CASHFREE_BASE_URL = "https://api.cashfree.com/pg"  # use sandbox for testing
 class CreateOrderView(APIView):
     def post(self, request):
         serializer = CustomUserSerializer(request.user)
+        print('ss', serializer.data, serializer.data.email)
         order_id = str(uuid.uuid4())
         amount = request.data.get("amount", 1)  # you can calculate from cart
         
