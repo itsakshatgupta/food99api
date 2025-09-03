@@ -45,7 +45,10 @@ from rest_framework.views import APIView
 import uuid
 
 CASHFREE_BASE_URL = "https://sandbox.cashfree.com/pg"  # use sandbox for testing
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CreateOrderView(APIView):
     def post(self, request):
         order_id = str(uuid.uuid4())
