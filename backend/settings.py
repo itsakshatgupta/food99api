@@ -50,6 +50,15 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),   # default: 5 minutes
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),     # default: 1 day
+    "ROTATE_REFRESH_TOKENS": False,                   # set True if you want new refresh token each time
+    "BLACKLIST_AFTER_ROTATION": True,                 # requires blacklist app
+}
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
