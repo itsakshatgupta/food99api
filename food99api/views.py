@@ -69,8 +69,8 @@ class CreateOrderView(APIView):
             "order_currency": "INR",
             "customer_details": {
                 "customer_id": "cust_" + str(uuid.uuid4()),
-                "customer_email": serializer.data.email,
-                "customer_phone": serializer.data.phone_number,
+                "customer_email": serializer.data['email'],
+                "customer_phone": serializer.data['phone_number'],
             },
             # "order_meta": {
             #     "payment_methods": "upi"  # 👈 restricts to UPI only
