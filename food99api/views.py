@@ -43,7 +43,10 @@ class CreateOrderView(APIView):
                 "customer_email": 'akshatguptatom@gmail.com',
                 "customer_phone": '+918881316612',
             },
-            "payment_method": { "upi": { "channel": "qrcode" } }
+            "payment_method": { "upi": {
+            "channel": "collect",
+            "upi_id": "akshatguptatom@kotak"
+        } }
             # "order_meta": {
             #     "payment_methods": "upi"  # 👈 restricts to UPI only
             # }
