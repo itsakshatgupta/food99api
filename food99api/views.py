@@ -15,7 +15,7 @@ from .models import Cart, CartItem, MenuItem, CustomUser, Category, Order
 from .serializers import CartSerializer, CartItemSerializer, CategorySerializer, SignupSerializer, CustomUserSerializer, OrderSerializer
 
 
-CASHFREE_BASE_URL = "https://sandbox.cashfree.com/pg"  # use sandbox for testing
+CASHFREE_BASE_URL = "https://api.cashfree.com/pg"  # use sandbox for testing
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateOrderView(APIView):
@@ -39,7 +39,7 @@ class CreateOrderView(APIView):
             "customer_details": {
                 "customer_id": "cust_" + str(uuid.uuid4()),
                 "customer_email": 'akshatguptatom@gmail.com',
-                "customer_phone": 8881316612,
+                "customer_phone": '8881316612',
             },
             # "order_meta": {
             #     "payment_methods": "upi"  # 👈 restricts to UPI only
