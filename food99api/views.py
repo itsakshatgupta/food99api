@@ -43,10 +43,6 @@ class CreateOrderView(APIView):
                 "customer_email": 'akshatguptatom@gmail.com',
                 "customer_phone": '+918881316612',
             },
-            "order_meta": {
-                "return_url": "https://www.cashfree.com/devstudio/preview/pg/seamless?order_id={order_id}",
-                "payment_methods": "cc,dc,upi"
-    }
         }
 
         res = requests.post(f"{CASHFREE_BASE_URL}/orders", headers=headers, json=payload)
