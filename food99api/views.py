@@ -17,13 +17,14 @@ from .serializers import CartSerializer, CartItemSerializer, CategorySerializer,
 
 CASHFREE_BASE_URL = "https://api.cashfree.com/pg"  # use sandbox for testing
 @method_decorator(csrf_exempt, name='dispatch')
-
 class CreateOrderView(APIView):
     def post(self, request):
         serializer = CustomUserSerializer(request.user)
         print('ss', serializer.data)
         order_id = str(uuid.uuid4())
-        amount = request.data.get("amount", 1)  # you can calculate from cart
+        # amount = request.data.get("amount", 1)  # you can calculate from cart
+        amount = CartItemViewSet.mycart
+        
         headers = {
             "accept": "application/json",
             "x-client-id": settings.CASHFREE_APP_ID,
@@ -31,18 +32,22 @@ class CreateOrderView(APIView):
             "x-api-version": "2022-09-01",
             "Content-Type": "application/json",
         }
+
         payload = {
             "order_id": order_id,
-            "order_amount": CartItemViewSet.mycart,
+            "order_amount": amount,
             "order_currency": "INR",
             "customer_details": {
                 "customer_id": "cust_" + str(uuid.uuid4()),
-                "customer_email": 'akshatguptanov@gmail.com',
-                "customer_phone": '8881316612',
+                "customer_email": 'akshatguptatom@gmail.com',
+                "customer_phone": '+918881316612',
             },
         }
+
         res = requests.post(f"{CASHFREE_BASE_URL}/orders", headers=headers, json=payload)
+
         return Response(res.json())
+
 @method_decorator(csrf_exempt, name='dispatch')
 class VerifyPaymentView(APIView):
     # This view can be used as a webhook endpoint or for manual verification
