@@ -43,10 +43,10 @@ from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import uuid
-
-CASHFREE_BASE_URL = "https://sandbox.cashfree.com/pg"  # use sandbox for testing
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+
+CASHFREE_BASE_URL = "https://sandbox.cashfree.com/pg"  # use sandbox for testing
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateOrderView(APIView):
@@ -75,7 +75,8 @@ class CreateOrderView(APIView):
         res = requests.post(f"{CASHFREE_BASE_URL}/orders", headers=headers, json=payload)
 
         return Response(res.json())
-
+    
+@method_decorator(csrf_exempt, name='dispatch')
 class VerifyPaymentView(APIView):
     # This view can be used as a webhook endpoint or for manual verification
     def post(self, request, *args, **kwargs):
