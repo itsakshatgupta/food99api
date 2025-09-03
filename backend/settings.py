@@ -61,7 +61,7 @@ SIMPLE_JWT = {
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",  # Next.js frontend
     "http://127.0.0.1:3000",  # optional
-    "https://food99.vercel.app",  # optional
+    "https://food99.vercel.app/",  # optional
 ]
 TEMPLATES = [
     {
