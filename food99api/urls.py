@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import menu_by_category, CartViewSet,SignupView,me
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
-from .views import InitiatePaymentView, VerifyPaymentView, CartItemViewSet
+from .views import CreateOrderView, VerifyPaymentView, CartItemViewSet
 
 router = DefaultRouter()
 router.register("cart/items", CartItemViewSet, basename="cart-item")
@@ -19,7 +19,7 @@ urlpatterns = [
     *router.urls,
     
     # New payment-related URLs
-    path('api/payments/initiate/', InitiatePaymentView.as_view(), name='initiate_payment'),
+    path('api/payments/create-order/', CreateOrderView.as_view(), name='initiate_payment'),
     path('api/payments/verify/', VerifyPaymentView.as_view(), name='verify_payment'),
 ]
 

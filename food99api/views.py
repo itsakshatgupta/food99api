@@ -37,68 +37,41 @@ from .serializers import OrderSerializer
 from rest_framework.views import APIView
 import uuid
 
-class InitiatePaymentView(APIView):
-    permission_classes = [IsAuthenticated]
+# views.py
+import requests
+from django.conf import settings
+from rest_framework.response import Response
+from rest_framework.views import APIView
+import uuid
 
-    def post(self, request, *args, **kwargs):
-        # Calculate total amount from the user's cart
-        user = request.user
-        cart = Cart.objects.get(user=user)
-        total_amount = sum(item.menu_item.price * item.quantity for item in cart.cartitem_set.all())
+CASHFREE_BASE_URL = "https://sandbox.cashfree.com/pg"  # use sandbox for testing
 
-        if total_amount <= 0:
-            return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Create a unique order ID
-        order_id = f'order_{uuid.uuid4().hex}'
-
-        # Create a new order in your database
-        order = Order.objects.create(
-            user=user,
-            cart=cart,
-            order_id=order_id,
-            amount=total_amount,
-            payment_status='PENDING'
-        )
-
-        # Prepare data for Cashfree API
-        payload = {
-            "order_id": order_id,
-            "order_amount": float(total_amount),
-            "order_currency": "INR",
-            "customer_details": {
-                "customer_id": str(user.id),
-                "customer_email": user.email,
-                "customer_phone": user.phone_number
-            },
-            "order_meta": {
-                "return_url": f"http://yourapp.com/payment_success/?order_id={order_id}"
-            }
-        }
-
+class CreateOrderView(APIView):
+    def post(self, request):
+        order_id = str(uuid.uuid4())
+        amount = request.data.get("amount", 100)  # you can calculate from cart
+        
         headers = {
             "x-client-id": settings.CASHFREE_APP_ID,
             "x-client-secret": settings.CASHFREE_SECRET_KEY,
-            "x-api-version": "2022-01-01",
-            "Content-Type": "application/json"
+            "x-api-version": "2022-09-01",
+            "Content-Type": "application/json",
         }
 
-        # Make the API call to Cashfree
-        try:
-            response = requests.post(f"{settings.CASHFREE_API_URL}/orders", headers=headers, data=json.dumps(payload))
-            response.raise_for_status()  # Raise an exception for bad status codes
+        payload = {
+            "order_id": order_id,
+            "order_amount": amount,
+            "order_currency": "INR",
+            "customer_details": {
+                "customer_id": "cust_" + str(uuid.uuid4()),
+                "customer_email": "test@example.com",
+                "customer_phone": "9999999999",
+            },
+        }
 
-            cashfree_data = response.json()
-            payment_link = cashfree_data.get('payment_link')
+        res = requests.post(f"{CASHFREE_BASE_URL}/orders", headers=headers, json=payload)
 
-            if not payment_link:
-                return Response({'error': 'Failed to get payment link from Cashfree'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            return Response({'payment_link': payment_link, 'order_id': order_id}, status=status.HTTP_200_OK)
-
-        except requests.exceptions.RequestException as e:
-            print(f"Cashfree API Error: {e}")
-            return Response({'error': 'Payment gateway error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(res.json())
 
 class VerifyPaymentView(APIView):
     # This view can be used as a webhook endpoint or for manual verification

@@ -78,4 +78,4 @@ class CartSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['id', 'order_id', 'amount', 'payment_status', 'created_at']
+        fields = "__all__"
