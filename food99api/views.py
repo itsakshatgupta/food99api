@@ -15,7 +15,7 @@ from .models import Cart, CartItem, MenuItem, CustomUser, Category, Order
 from .serializers import CartSerializer, CartItemSerializer, CategorySerializer, SignupSerializer, CustomUserSerializer, OrderSerializer
 
 
-CASHFREE_BASE_URL = "https://api.cashfree.com/pg"  # use sandbox for testing
+CASHFREE_BASE_URL = "https://sandbox.cashfree.com/pg"  # use sandbox for testing
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateOrderView(APIView):
