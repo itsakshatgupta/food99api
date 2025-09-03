@@ -46,7 +46,7 @@ import uuid
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
-CASHFREE_BASE_URL = "https://sandbox.cashfree.com/pg"  # use sandbox for testing
+CASHFREE_BASE_URL = "https://api.cashfree.com/pg"  # use sandbox for testing
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateOrderView(APIView):
