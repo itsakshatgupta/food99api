@@ -40,7 +40,6 @@ class MenuItemVariantSerializer(serializers.ModelSerializer):
         model = MenuItemVariant
         fields = ['variant_name', 'price']
 
-
 class MenuItemSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
     variant = MenuItemVariantSerializer(source='menuitemvariant_set', many=True)

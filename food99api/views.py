@@ -16,11 +16,38 @@ from .serializers import CartSerializer, CartItemSerializer, CategorySerializer,
 
 
 CASHFREE_BASE_URL = "https://api.cashfree.com/pg"  # use sandbox for testing
-
 @method_decorator(csrf_exempt, name='dispatch')
 
 class CreateOrderView(APIView):
     def post(self, request):
+        try:
+            cart = Cart.objects.get(user=request.user)
+        except Cart.DoesNotExist:
+            return Response({"items": [], "total": 0})
+
+        serializer = CartSerializer(cart)
+        items = []
+        total = 0
+    
+        for cart_item in cart.cartitem_set.all():
+            
+            base_price = cart_item.menu_item.price
+            line_total = base_price * cart_item.quantity
+    
+            items.append({
+                "id": cart_item.id,
+                "quantity": cart_item.quantity,
+                "menu_item": {
+                    "id": cart_item.menu_item.id,
+                    "name": cart_item.menu_item.name,
+                    "description": cart_item.menu_item.description,
+                    "image": str(cart_item.menu_item.image.url) if cart_item.menu_item.image else None,
+                    "price": str(base_price),
+                    "variants": list(cart_item.menu_item.variant.values("id", "name", "price")),  # show all possible variants
+                },
+                "line_total": str(line_total),
+            })
+            total += line_total
         serializer = CustomUserSerializer(request.user)
         print('ss', serializer.data)
         order_id = str(uuid.uuid4())
@@ -36,12 +63,12 @@ class CreateOrderView(APIView):
 
         payload = {
             "order_id": order_id,
-            "order_amount": amount,
+            "order_amount": total,
             "order_currency": "INR",
             "customer_details": {
                 "customer_id": "cust_" + str(uuid.uuid4()),
-                "customer_email": 'akshatguptatom@gmail.com',
-                "customer_phone": '+918881316612',
+                "customer_email": serializer.data['email'],
+                "customer_phone": serializer.data['phone_number'],
             },
         }
 
@@ -115,7 +142,6 @@ class SignupView(generics.CreateAPIView):
             "refresh": str(refresh),
             "access": str(access)
         })
-
 
 class CartItemViewSet(viewsets.ModelViewSet):
     """
