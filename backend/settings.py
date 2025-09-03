@@ -33,16 +33,12 @@ INSTALLED_APPS = [
 # Tell Django to use the custom user model
 AUTH_USER_MODEL = 'food99api.CustomUser'
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",  # Next.js frontend
-    "http://127.0.0.1:3000",  # optional
-    "https://food99.vercel.app/",  # optional
-]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    "food99api.middleware.DisableCSRFMiddleware",  # add here
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
