@@ -33,7 +33,7 @@ class CreateOrderView(APIView):
         }
         payload = {
             "order_id": order_id,
-            "order_amount": CartItemViewSet.mycart(),
+            "order_amount": CartItemViewSet.mycart,
             "order_currency": "INR",
             "customer_details": {
                 "customer_id": "cust_" + str(uuid.uuid4()),
