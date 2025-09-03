@@ -1,50 +1,19 @@
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from .models import Cart, CartItem, MenuItem
-from .serializers import CartSerializer, CartItemSerializer
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from .models import MenuItem
-# Create your views here.
-from django.http import HttpResponse
-from .models import Category
-from .serializers import CategorySerializer
-from django.shortcuts import render
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework import viewsets
-from rest_framework.response import Response
-from .models import MenuItem, Cart
-from .serializers import MenuItemSerializer, CartSerializer
-from .serializers import CustomUserSerializer
-from .serializers import SignupSerializer
-from .models import CustomUser
-from rest_framework import generics
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import generics
-from .models import CustomUser
-from .serializers import SignupSerializer, CustomUserSerializer
-from rest_framework.response import Response
-
-import requests
 import json
-from rest_framework import status
-from django.conf import settings
-from .models import Cart, Order
-from .serializers import OrderSerializer
-from rest_framework.views import APIView
 import uuid
-
-# views.py
 import requests
 from django.conf import settings
-from rest_framework.response import Response
+from django.http import HttpResponse
 from rest_framework.views import APIView
-import uuid
+from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from rest_framework import viewsets, status, generics
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.decorators import api_view, permission_classes, action
+from .models import Cart, CartItem, MenuItem, CustomUser, Category, Order
+from .serializers import CartSerializer, CartItemSerializer, CategorySerializer, SignupSerializer, CustomUserSerializer, OrderSerializer
+
 
 CASHFREE_BASE_URL = "https://api.cashfree.com/pg"  # use sandbox for testing
 
