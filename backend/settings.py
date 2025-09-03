@@ -18,6 +18,8 @@ DEBUG=True
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
 
 INSTALLED_APPS = [
+    "daphne",   # ASGI server
+    "channels",
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -30,6 +32,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'food99api',
 ]
+ASGI_APPLICATION = "food99api.asgi.application"
+
 # Tell Django to use the custom user model
 AUTH_USER_MODEL = 'food99api.CustomUser'
 
