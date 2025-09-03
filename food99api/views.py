@@ -38,7 +38,7 @@ class CreateOrderView(APIView):
             "order_currency": "INR",
             "customer_details": {
                 "customer_id": "cust_" + str(uuid.uuid4()),
-                "customer_email": 'akshatgupta',
+                "customer_email": 'akshatguptatom@gmail.com',
                 "customer_phone": 8881316612,
             },
             # "order_meta": {
