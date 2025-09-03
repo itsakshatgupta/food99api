@@ -70,6 +70,9 @@ class CreateOrderView(APIView):
                 "customer_email": "test@example.com",
                 "customer_phone": "9999999999",
             },
+            "order_meta": {
+                "payment_methods": "upi"  # 👈 restricts to UPI only
+            }
         }
 
         res = requests.post(f"{CASHFREE_BASE_URL}/orders", headers=headers, json=payload)
