@@ -33,6 +33,11 @@ INSTALLED_APPS = [
 # Tell Django to use the custom user model
 AUTH_USER_MODEL = 'food99api.CustomUser'
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",  # Next.js frontend
+    "http://127.0.0.1:3000",  # optional
+    "https://food99.vercel.app/",  # optional
+]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -58,11 +63,6 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,                   # set True if you want new refresh token each time
     "BLACKLIST_AFTER_ROTATION": True,                 # requires blacklist app
 }
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",  # Next.js frontend
-    "http://127.0.0.1:3000",  # optional
-    "https://food99.vercel.app/",  # optional
-]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
