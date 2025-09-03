@@ -18,6 +18,7 @@ from .serializers import CartSerializer, CartItemSerializer, CategorySerializer,
 CASHFREE_BASE_URL = "https://api.cashfree.com/pg"  # use sandbox for testing
 
 @method_decorator(csrf_exempt, name='dispatch')
+
 class CreateOrderView(APIView):
     def post(self, request):
         serializer = CustomUserSerializer(request.user)
@@ -26,6 +27,7 @@ class CreateOrderView(APIView):
         amount = request.data.get("amount", 10)  # you can calculate from cart
         
         headers = {
+            "accept": "application/json",
             "x-client-id": settings.CASHFREE_APP_ID,
             "x-client-secret": settings.CASHFREE_SECRET_KEY,
             "x-api-version": "2022-09-01",
@@ -39,7 +41,7 @@ class CreateOrderView(APIView):
             "customer_details": {
                 "customer_id": "cust_" + str(uuid.uuid4()),
                 "customer_email": 'akshatguptatom@gmail.com',
-                "customer_phone": '8881316612',
+                "customer_phone": '+918881316612',
             },
             # "order_meta": {
             #     "payment_methods": "upi"  # 👈 restricts to UPI only
