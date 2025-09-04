@@ -16,6 +16,7 @@ from .serializers import CartSerializer, CartItemSerializer, CategorySerializer,
 
 
 CASHFREE_BASE_URL = "https://api.cashfree.com/pg"  # use sandbox for testing
+
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateOrderView(APIView):
     def post(self, request):
@@ -182,30 +183,13 @@ class CartItemViewSet(viewsets.ModelViewSet):
             cart = Cart.objects.get(user=user)
         except Cart.DoesNotExist:
             return Response({"items": [], "total": 0})
+        data = Cart.objects.get(user=CustomUser.objects.get(username="akshat1")).total()
+        return Response({
+            "items": 'items',
+            "total": str(data),
+        })
+        
 
-        serializer = CartSerializer(cart)
-        items = []
-        total = 0
-    
-        for cart_item in cart.cartitem_set.all():
-            base_price = cart_item.menu_item.price
-            line_total = base_price * cart_item.quantity
-    
-            items.append({
-                "id": cart_item.id,
-                "quantity": cart_item.quantity,
-                "menu_item": {
-                    "id": cart_item.menu_item.id,
-                    "name": cart_item.menu_item.name,
-                    "description": cart_item.menu_item.description,
-                    "image": str(cart_item.menu_item.image.url) if cart_item.menu_item.image else None,
-                    "price": str(base_price),
-                    "variants": list(cart_item.menu_item.variant.values("id", "name", "price")),  # show all possible variants
-                },
-                "line_total": str(line_total),
-            })
-            total += line_total
-    
         return Response({
             "items": items,
             "total": str(total),
@@ -239,4 +223,7 @@ def menu_items(request):
     data = list(MenuItem.objects.values())
     return Response(data)
 
-
+@api_view(['GET'])
+def test(request):
+    data = Cart.objects.get(user=CustomUser.objects.get(username="akshat1")).total()
+    return Response(data)

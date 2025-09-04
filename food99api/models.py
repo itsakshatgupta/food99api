@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum, F
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings   # <-- for CustomUser reference
 from cloudinary.models import CloudinaryField
@@ -30,6 +31,7 @@ class MenuVariant(models.Model):
 
     def __str__(self):
         return self.name
+
 # Menu Item
 class MenuItem(models.Model):
     name = models.CharField(max_length=100)
@@ -53,11 +55,18 @@ class MenuItemVariant(models.Model):
 
     def __str__(self):
         return f"{self.menu_item.name} - {self.variant.name} : {self.price}"
+    
 # Cart
 class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # <-- updated
     items = models.ManyToManyField(MenuItem, through='CartItem')
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    def total(self):
+        return self.cartitem_set.aggregate(
+        total=Sum(F("menu_item__price") * F("quantity"))
+        )["total"] or 0
+    
     def __str__(self):
         return self.user.username
 

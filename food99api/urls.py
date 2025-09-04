@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import menu_by_category, CartViewSet,SignupView,me
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
-from .views import CreateOrderView, VerifyPaymentView, CartItemViewSet
+from .views import CreateOrderView, VerifyPaymentView, CartItemViewSet, test
 
 router = DefaultRouter()
 router.register("cart/items", CartItemViewSet, basename="cart-item")
@@ -15,6 +15,7 @@ urlpatterns = [
     path('api/signup/', SignupView.as_view(), name='signup'),
     path('api/me/', me, name='me'),
     path('cart', CartViewSet, name='me'),
+    path('test', test, name='test'),
     
     *router.urls,
     
