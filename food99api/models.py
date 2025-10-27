@@ -37,6 +37,7 @@ class MenuItem(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     price = models.DecimalField(max_digits=8, decimal_places=2)
+    tags = models.JSONField(default=list)
     image = CloudinaryField('image', folder='menu_images/', blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='items')
     variant = models.ManyToManyField(MenuVariant, blank=True)  # <-- updated 
