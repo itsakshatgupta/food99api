@@ -1,78 +1,77 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
-from .models import Seller, Product, BuyerProfile, Message, Lead
+from .models import CustomUser, Seller, Product, BuyerProfile, Message, Lead
+from django.contrib.auth import get_user_model
+User = get_user_model()
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom fields
+        token['username'] = user.username
+        token['user_type'] = user.user_type
+        return token
 
 
-# ------------------- USER REGISTER -------------------
-class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password']
-
-    def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data.get('email', ''),
-            password=validated_data['password']
-        )
-        # Auto-create BuyerProfile when a user registers
-        BuyerProfile.objects.create(user=user)
-        return user
-
-
-# ------------------- BUYER -------------------
-class BuyerProfileSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(read_only=True)
-
-    class Meta:
-        model = BuyerProfile
-        fields = ['id', 'user', 'company_name', 'phone', 'address', 'city', 'state', 'country']
-        
-# --- User Serializer ---
+# -------------------------
+# USER SERIALIZER
+# -------------------------
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email']
+        fields = ['id', 'username', 'email', 'phone', 'user_type', 'is_verified']
 
 
-# --- Seller Serializer ---
+# -------------------------
+# SELLER SERIALIZER
+# -------------------------
 class SellerSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+
     class Meta:
         model = Seller
         fields = '__all__'
 
 
-# --- Product Serializer ---
-class ProductSerializer(serializers.ModelSerializer):
-    seller = SellerSerializer(read_only=True)
-    class Meta:
-        model = Product
-        fields = '__all__'
-
-
-# --- Buyer Serializer ---
+# -------------------------
+# BUYER SERIALIZER
+# -------------------------
 class BuyerProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+
     class Meta:
         model = BuyerProfile
         fields = '__all__'
 
 
-# --- Message Serializer ---
+# -------------------------
+# PRODUCT SERIALIZER
+# -------------------------
+class ProductSerializer(serializers.ModelSerializer):
+    seller = SellerSerializer(read_only=True)
+
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+
+# -------------------------
+# MESSAGE SERIALIZER
+# -------------------------
 class MessageSerializer(serializers.ModelSerializer):
     sender = UserSerializer(read_only=True)
     receiver = UserSerializer(read_only=True)
-    product = ProductSerializer(read_only=True)
 
     class Meta:
         model = Message
         fields = '__all__'
 
 
-# --- Lead Serializer ---
+# -------------------------
+# LEAD SERIALIZER
+# -------------------------
 class LeadSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
     seller = SellerSerializer(read_only=True)

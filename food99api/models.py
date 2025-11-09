@@ -1,6 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from django.contrib.auth.models import AbstractUser
+
+# -------------------------
+# 1️⃣ USER MODEL
+# -------------------------
+class CustomUser(AbstractUser):
+    USER_TYPES = [
+        ('buyer', 'Buyer'),
+        ('seller', 'Seller'),
+    ]
+    user_type = models.CharField(max_length=10, choices=USER_TYPES)
+    phone = models.CharField(max_length=15, blank=True)
+    is_verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.username} ({self.user_type})"
+    
 class Seller(models.Model):
     BUSINESS_TYPES = [
         ('manufacturer', 'Manufacturer'),

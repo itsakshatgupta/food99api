@@ -4,10 +4,11 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView, TokenRefreshView
 )
 from .views import (
-    HomeSectionsView, RegisterView, BuyerProfileViewSet, SellerViewSet, ProductViewSet, MessageViewSet, LeadViewSet
+    HomeSectionsView, RegisterView, UserViewSet, BuyerProfileViewSet, SellerViewSet, ProductViewSet, MessageViewSet, LeadViewSet
 )
 
 router = DefaultRouter()
+router.register(r'users', UserViewSet)
 router.register(r'buyers', BuyerProfileViewSet)
 router.register(r'sellers', SellerViewSet)
 router.register(r'products', ProductViewSet)
