@@ -125,9 +125,9 @@ class HomeSectionsView(APIView):
             "gridCol": 2,
             "overflowX": False,
             "items": [
-                { "name": "Hakka Noodles", "image": "/test_img/nmk5.jpg", api: "/api/menu/trending" },
-                { "name": "Pizza Sauce", "image": "/test_img/nmk4.jpg", api: "/api/menu/trending" },
-                { "name": "Healthy Juices", "image": "/test_img/nmk7.jpeg", api: "/api/menu/trending" },
+                { "name": "Hakka Noodles", "image": "/test_img/nmk5.jpg", "api": "/api/menu/trending" },
+                { "name": "Pizza Sauce", "image": "/test_img/nmk4.jpg", "api": "/api/menu/trending" },
+                { "name": "Healthy Juices", "image": "/test_img/nmk7.jpeg", "api": "/api/menu/trending" },
             ],
         },
         {
