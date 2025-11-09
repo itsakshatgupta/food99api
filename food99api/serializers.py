@@ -4,15 +4,27 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
 
-        # Add custom fields
-        token['username'] = user.username
+        # 🔹 Add custom claims here
         token['user_type'] = user.user_type
+        token['username'] = user.username
+
         return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['user'] = {
+            'id': self.user.id,
+            'username': self.user.username,
+            'user_type': self.user.user_type,
+        }
+        return data
 
 
 # -------------------------
