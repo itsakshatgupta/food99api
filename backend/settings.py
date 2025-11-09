@@ -3,6 +3,7 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 
+
 from pathlib import Path
 import os
 from dotenv import load_dotenv

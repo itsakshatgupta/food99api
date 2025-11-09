@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 
 # -------------------------
@@ -26,7 +26,7 @@ class Seller(models.Model):
         ('retailer', 'Retailer'),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='seller_profile')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='seller_profile')
     company_name = models.CharField(max_length=150)
     business_type = models.CharField(max_length=30, choices=BUSINESS_TYPES)
     gst_number = models.CharField(max_length=20, blank=True, null=True)
@@ -58,7 +58,7 @@ class Product(models.Model):
     def __str__(self):
         return f"{self.name} ({self.seller.company_name})"
 class BuyerProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='buyer_profile')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='buyer_profile')
     company_name = models.CharField(max_length=150, blank=True)
     business_type = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=100, blank=True)
@@ -70,8 +70,8 @@ class BuyerProfile(models.Model):
         return self.user.username
 
 class Message(models.Model):
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_messages')
+    receiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_messages')
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
     content = models.TextField()
     message_type = models.CharField(
@@ -87,7 +87,7 @@ class Message(models.Model):
 class Lead(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
     seller = models.ForeignKey(Seller, on_delete=models.SET_NULL, null=True)
-    buyer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    buyer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     enquiry_text = models.TextField(blank=True)
     source = models.CharField(max_length=50, default='website')  # or 'whatsapp', 'call'
     status = models.CharField(
