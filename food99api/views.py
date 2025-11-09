@@ -1,229 +1,441 @@
-import json
-import uuid
-import requests
-from django.conf import settings
-from django.http import HttpResponse
+from rest_framework import viewsets, permissions, generics
+from django.contrib.auth.models import User
+from .models import Seller, Product, BuyerProfile, Message, Lead
+from rest_framework import viewsets, permissions
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from .serializers import (
+    UserSerializer, SellerSerializer, ProductSerializer,
+    BuyerProfileSerializer, MessageSerializer, LeadSerializer, RegisterSerializer
+)
+
+
+
+# ------------------- REGISTER USER -------------------
+class RegisterView(generics.CreateAPIView):
+    serializer_class = RegisterSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+# ------------------- BUYER CRUD -------------------
+class BuyerProfileViewSet(viewsets.ModelViewSet):
+    queryset = BuyerProfile.objects.all()
+    serializer_class = BuyerProfileSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+# --- User (for info only) ---
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+# --- Seller ---
+class SellerViewSet(viewsets.ModelViewSet):
+    queryset = Seller.objects.all().order_by('-joined_on')
+    serializer_class = SellerSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+# --- Product ---
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all().order_by('-created_at')
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+# --- Buyer ---
+class BuyerProfileViewSet(viewsets.ModelViewSet):
+    queryset = BuyerProfile.objects.all()
+    serializer_class = BuyerProfileSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+# --- Message ---
+class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Message.objects.all().order_by('-created_at')
+    serializer_class = MessageSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+# --- Lead ---
+class LeadViewSet(viewsets.ModelViewSet):
+    queryset = Lead.objects.all().order_by('-created_at')
+    serializer_class = LeadSerializer
+    permission_classes = [permissions.AllowAny]
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from rest_framework import viewsets, status, generics
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.decorators import api_view, permission_classes, action
-from .models import Cart, CartItem, MenuItem, CustomUser, Category, Order
-from .serializers import CartSerializer, CartItemSerializer, CategorySerializer, SignupSerializer, CustomUserSerializer, OrderSerializer
+
+class HomeSectionsView(APIView):
+    def get(self, request):
+        sections = [
+        {
+            "id": 1,
+            "type": "offers",
+            "title": "🔥 Offers for You",
+            "gridCol": 2,
+            "color_theme_name": 'fresh vibe',
+            "overflowX": False,
+            "items": [
+                { "title": "50% OFF on First Order", "code": "WELCOME50", "image": "/test_img/nmk5.jpg", "bg": "bg-gradient-to-r from-blue-500 to-indigo-500" },
+                { "title": "Free Delivery Above ₹199", "code": "FREESHIP", "image": "/test_img/nmk2.png", "bg": "bg-gradient-to-r from-green-400 to-emerald-500" },
+                { "title": "10% Cashback via UPI", "code": "UPI10", "image": "/test_img/nmk3.jpeg", "bg": "bg-gradient-to-r from-rose-400 to-pink-500" },
+                { "title": "Flat ₹75 OFF for Students", "code": "STUDENT75", "image": "/test_img/nmk4.jpg", "bg": "bg-gradient-to-r from-amber-400 to-orange-500" },
+            ],
+        },
+        {
+            "id": 2,
+            "type": "category_grid",
+            "title": "🍱 Popular Categories",
+            "color_theme_name": 'focus vibe',
+            "gridCol": 3,
+            "overflowX": False,
+            "items": [
+                {
+                    "sub_cat": "Clothes", "items": [
+                        { "name": "Noodles", "image": "/test_img/nmk3.jpeg" },
+                        { "name": "Pizza", "image": "/test_img/nmk4.jpg" },
+                        { "name": "Juices", "image": "/test_img/nmk7.jpeg" },
+                    ],
+                },
+                {
+                    "sub_cat": "Foods", "items": [
+                        { "name": "Noodles", "image": "/test_img/nmk3.jpeg" },
+                        { "name": "Pizza", "image": "/test_img/nmk4.jpg" },
+                        { "name": "Juices", "image": "/test_img/nmk7.jpeg" },
+                    ],
+                },
+                {
+                    "sub_cat": "Households", "items": [
+                        { "name": "Noodles", "image": "/test_img/nmk3.jpeg" },
+                        { "name": "Pizza", "image": "/test_img/nmk4.jpg" },
+                        { "name": "Juices", "image": "/test_img/nmk7.jpeg" },
+                    ],
+                },
+            ],
+        },
+        {
+            "id": 3,
+            "type": "search_suggestion",
+            "title": "Are you looking these?",
+            "gridCol": 2,
+            "overflowX": False,
+            "items": [
+                { "name": "Hakka Noodles", "image": "/test_img/nmk5.jpg", api: "/api/menu/trending" },
+                { "name": "Pizza Sauce", "image": "/test_img/nmk4.jpg", api: "/api/menu/trending" },
+                { "name": "Healthy Juices", "image": "/test_img/nmk7.jpeg", api: "/api/menu/trending" },
+            ],
+        },
+        {
+            "id": 5,
+            "type": "product_grid",
+            "title": "🍱 Featured Products",
+            "gridCol": False,
+            "overflowX": True,
+            "items": [
+                { "name": "Noodles", "image": "/test_img/nmk12.webp" },
+                { "name": "Pizza", "image": "/test_img/nmk13.jpg" },
+                { "name": "Juices", "image": "/test_img/nmk14.jpeg" },
+                { "name": "Pizza", "image": "/test_img/nmk14.jpeg" },
+                { "name": "Juices", "image": "/test_img/nmk14.png" },
+                { "name": "Juices", "image": "/test_img/nmk15.webp" },
+                { "name": "Pizza", "image": "/test_img/bs2.webp" },
+                { "name": "Juices", "image": "/test_img/bs1.webp" },
+            ],
+        },
+        {
+            "id": 1,
+            "type": "category_grid",
+            "title": "🔥 Up to 70% Off — Deal Festival",
+            "color_theme_name": 'discover vibe',
+            "gridCol": 3,
+            "overflowX": False,
+            "items": [
+                {
+                    "sub_cat": "Gourmet Snacks", "items": [
+                        { "name": "Sesame Crackers", "image": "/test_img/nmk13.jpg" },
+                        { "name": "Rice Chips", "image": "/test_img/nmk15.webp" },
+                        { "name": "Oat Bites", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Coconut Crisps", "image": "/test_img/nmk12.webp" },
+                        { "name": "Cumin Sticks", "image": "/test_img/nmk14.png" },
+                    ]
+                },
+                {
+                    "sub_cat": "Hydration Essentials", "items": [
+                        { "name": "Vitamin Water", "image": "/test_img/nmk14.png" },
+                        { "name": "Energy Sipper", "image": "/test_img/nmk12.webp" },
+                        { "name": "Aloe Booster", "image": "/test_img/nmk15.webp" },
+                    ]
+                },
+                {
+                    "sub_cat": "Pizzeria Favourites", "items": [
+                        { "name": "Thin Crust Slice", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Cheese Burst", "image": "/test_img/nmk14.png" },
+                        { "name": "NYC Lava Pizza", "image": "/test_img/nmk13.jpg" },
+                        { "name": "Mushroom Special", "image": "/test_img/nmk15.webp" },
+                    ]
+                }, {
+                    "sub_cat": "Gourmet Snacks", "items": [
+                        { "name": "Sesame Crackers", "image": "/test_img/nmk13.jpg" },
+                        { "name": "Rice Chips", "image": "/test_img/nmk15.webp" },
+                        { "name": "Oat Bites", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Coconut Crisps", "image": "/test_img/nmk12.webp" },
+                        { "name": "Cumin Sticks", "image": "/test_img/nmk14.png" },
+                    ]
+                },
+                {
+                    "sub_cat": "Hydration Essentials", "items": [
+                        { "name": "Vitamin Water", "image": "/test_img/nmk14.png" },
+                        { "name": "Energy Sipper", "image": "/test_img/nmk12.webp" },
+                        { "name": "Aloe Booster", "image": "/test_img/nmk15.webp" },
+                    ]
+                },
+                {
+                    "sub_cat": "Pizzeria Favourites", "items": [
+                        { "name": "Thin Crust Slice", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Cheese Burst", "image": "/test_img/nmk14.png" },
+                        { "name": "NYC Lava Pizza", "image": "/test_img/nmk13.jpg" },
+                        { "name": "Mushroom Special", "image": "/test_img/nmk15.webp" },
+                    ]
+                },
+            ]
+        },
+        {
+            "id": 2,
+            "type": "category_grid",
+            "title": "🍱 Grab More — Pay Less",
+            "color_theme_name": 'fresh vibe',
+            "gridCol": 3,
+            "overflowX": False,
+            "items": [
+                {
+                    "sub_cat": "Asian Bites", "items": [
+                        { "name": "Ramen Bowl", "image": "/test_img/nmk12.webp" },
+                        { "name": "Cheese Pot Rice", "image": "/test_img/nmk15.webp" },
+                        { "name": "Bok Spice Plate", "image": "/test_img/nmk14.png" },
+                    ]
+                },
+                {
+                    "sub_cat": "Energy Boosters", "items": [
+                        { "name": "Guava Boost", "image": "/test_img/nmk13.jpg" },
+                        { "name": "Lychee Rush", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Mango Power", "image": "/test_img/nmk12.webp" },
+                        { "name": "Berry Aminos", "image": "/test_img/nmk14.png" },
+                    ]
+                },
+                {
+                    "sub_cat": "Baked Specials", "items": [
+                        { "name": "Stuffed Pizza", "image": "/test_img/nmk14.png" },
+                        { "name": "Napoli Slice", "image": "/test_img/nmk13.jpg" },
+                        { "name": "NYC Square", "image": "/test_img/nmk15.webp" },
+                    ]
+                },
+                {
+                    "sub_cat": "Instant Heat Meals", "items": [
+                        { "name": "Butter Corn Bowl", "image": "/test_img/nmk13.jpg" },
+                        { "name": "Hot Noodles", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Spice Mix Pot", "image": "/test_img/nmk12.webp" },
+                    ]
+                },
+            ]
+        },
+        {
+            "id": 5,
+            "type": "product_grid",
+            "title": "🍱 Featured Products",
+            "gridCol": False,
+            "overflowX": True,
+            "items": [
+                { "name": "Noodles", "image": "/test_img/nmk12.webp" },
+                { "name": "Pizza", "image": "/test_img/nmk13.jpg" },
+                { "name": "Juices", "image": "/test_img/nmk14.jpeg" },
+                { "name": "Pizza", "image": "/test_img/nmk14.jpeg" },
+                { "name": "Juices", "image": "/test_img/nmk14.png" },
+                { "name": "Juices", "image": "/test_img/nmk15.webp" },
+                { "name": "Pizza", "image": "/test_img/bs2.webp" },
+                { "name": "Juices", "image": "/test_img/bs1.webp" },
+            ],
+        },
+        {
+            "id": 3,
+            "type": "category_grid",
+            "title": "🥡 Deal Fiesta — Max Saver Combo",
+            "color_theme_name": 'woman fav',
+            "gridCol": 3,
+            "overflowX": False,
+            "items": [
+                {
+                    "sub_cat": "Italian Crust House", "items": [
+                        { "name": "Roman Crust", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Cheese Overload", "image": "/test_img/nmk13.jpg" },
+                        { "name": "Firewood Slice", "image": "/test_img/nmk12.webp" },
+                        { "name": "Garlic Toppings", "image": "/test_img/nmk15.webp" },
+                    ]
+                },
+                {
+                    "sub_cat": "Refreshing Shots", "items": [
+                        { "name": "Mint Lime", "image": "/test_img/nmk14.png" },
+                        { "name": "Kiwi Boost", "image": "/test_img/nmk15.webp" },
+                        { "name": "Lemon Chill", "image": "/test_img/nmk12.webp" },
+                        { "name": "Berry Punch", "image": "/test_img/nmk14.jpeg" },
+                    ]
+                },
+                {
+                    "sub_cat": "Asian Pot Flare", "items": [
+                        { "name": "Soba Noodles", "image": "/test_img/nmk14.png" },
+                        { "name": "Korean Spicy", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Thai Crack Mix", "image": "/test_img/nmk13.jpg" },
+                    ]
+                },
+            ]
+        },
+        {
+            "id": 4,
+            "type": "category_grid",
+            "title": "🍕 Crazy Combo Drop — Deal Bomb",
+            "color_theme_name": 'discover vibe',
+            "gridCol": 3,
+            "overflowX": False,
+            "items": [
+                {
+                    "sub_cat": "Fusion Slices", "items": [
+                        { "name": "Volcano Slice", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Hot Pepperoni", "image": "/test_img/nmk15.webp" },
+                        { "name": "Smoked Special", "image": "/test_img/nmk13.jpg" },
+                        { "name": "BBQ Deluxe", "image": "/test_img/nmk12.webp" },
+                    ]
+                },
+                {
+                    "sub_cat": "Hydro Juicery", "items": [
+                        { "name": "Cold Press Mix", "image": "/test_img/nmk14.png" },
+                        { "name": "Mint Hydrate", "image": "/test_img/nmk14.png" },
+                        { "name": "Fruit Amp", "image": "/test_img/nmk12.webp" },
+                    ]
+                },
+                {
+                    "sub_cat": "Flavour Filled Pots", "items": [
+                        { "name": "Schezwan Pot Rice", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Cream Noodle Mix", "image": "/test_img/nmk13.jpg" },
+                        { "name": "Veg Bowl Spice", "image": "/test_img/nmk15.webp" },
+                    ]
+                },
+                {
+                    "sub_cat": "Ultra Crunch Snacks", "items": [
+                        { "name": "Salted Chip Mix", "image": "/test_img/nmk14.png" },
+                        { "name": "Basil Nibbles", "image": "/test_img/nmk12.webp" },
+                        { "name": "Lemon Salt Crisp", "image": "/test_img/nmk15.webp" },
+                        { "name": "Rock Salt Crackers", "image": "/test_img/nmk13.jpg" },
+                    ]
+                },
+            ]
+        },
+        {
+            "id": 5,
+            "type": "category_grid",
+            "title": "🥤 Best of the Week — Mega Save",
+            "color_theme_name": 'fresh vibe',
+            "gridCol": 3,
+            "overflowX": False,
+            "items": [
+                {
+                    "sub_cat": "Quick Meal Pots", "items": [
+                        { "name": "Teriyaki Rice", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Soy Noodles", "image": "/test_img/nmk15.webp" },
+                        { "name": "Curry Pot Bites", "image": "/test_img/nmk13.jpg" },
+                    ]
+                },
+                {
+                    "sub_cat": "Juice Factory", "items": [
+                        { "name": "Mixed Orange", "image": "/test_img/nmk12.webp" },
+                        { "name": "Fruit Rush", "image": "/test_img/nmk14.png" },
+                        { "name": "Berry Lime", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Tangy Mojito", "image": "/test_img/nmk13.jpg" },
+                    ]
+                },
+                {
+                    "sub_cat": "Cheese Oven Crust", "items": [
+                        { "name": "Double Layer Crust", "image": "/test_img/nmk15.webp" },
+                        { "name": "Vegan Slice", "image": "/test_img/nmk14.png" },
+                        { "name": "Giant Slice", "image": "/test_img/nmk14.jpeg" },
+                    ]
+                },
+            ]
+        },
 
 
-CASHFREE_BASE_URL = "https://api.cashfree.com/pg"  # use sandbox for testing
-
-@method_decorator(csrf_exempt, name='dispatch')
-class CreateOrderView(APIView):
-    def post(self, request):
-        serializer = CustomUserSerializer(request.user)
-        print('ss', serializer.data)
-        order_id = str(uuid.uuid4())
-        amount = request.data.get("amount", 1)  # you can calculate from cart
-        # amount = CartItemViewSet.mycart
-        
-        headers = {
-            "accept": "application/json",
-            "x-client-id": settings.CASHFREE_APP_ID,
-            "x-client-secret": settings.CASHFREE_SECRET_KEY,
-            "x-api-version": "2022-09-01",
-            "Content-Type": "application/json",
-        }
-
-        payload = {
-            "order_id": order_id,
-            "order_amount": amount,
-            "order_currency": "INR",
-            "customer_details": {
-                "customer_id": "cust_" + str(uuid.uuid4()),
-                "customer_email": 'akshatguptatom@gmail.com',
-                "customer_phone": '+918881316612',
-            },
-        }
-
-        res = requests.post(f"{CASHFREE_BASE_URL}/orders", headers=headers, json=payload)
-
-        return Response(res.json())
-
-@method_decorator(csrf_exempt, name='dispatch')
-class VerifyPaymentView(APIView):
-    # This view can be used as a webhook endpoint or for manual verification
-    def post(self, request, *args, **kwargs):
-        # For a webhook, you'd get the order_id from the request body
-        order_id = request.data.get('order_id')
-
-        if not order_id:
-            return Response({'error': 'Order ID is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Make an API call to Cashfree to verify the payment status
-        headers = {
-            "x-client-id": settings.CASHFREE_APP_ID,
-            "x-client-secret": settings.CASHFREE_SECRET_KEY,
-            "x-api-version": "2022-01-01",
-            "Content-Type": "application/json"
-        }
-
-        try:
-            response = requests.get(f"{settings.CASHFREE_API_URL}/orders/{order_id}", headers=headers)
-            response.raise_for_status()
-            cashfree_data = response.json()
-
-            payment_status = cashfree_data.get('order_status')
-
-            # Update the order in your database based on the status
-            try:
-                order = Order.objects.get(order_id=order_id)
-                if payment_status == 'PAID':
-                    order.payment_status = 'COMPLETED'
-                    # You can also clear the user's cart here
-                    # cart = Cart.objects.get(user=order.user)
-                    # cart.items.clear()
-                else:
-                    order.payment_status = payment_status
-                order.save()
-
-                return Response({'status': order.payment_status}, status=status.HTTP_200_OK)
-
-            except Order.DoesNotExist:
-                return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        except requests.exceptions.RequestException as e:
-            print(f"Cashfree API Verification Error: {e}")
-            return Response({'error': 'Payment verification failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class SignupView(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
-    serializer_class = SignupSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-
-        # Generate JWT tokens for the new user
-        refresh = RefreshToken.for_user(user)
-        access = refresh.access_token
-
-        # Include user data + tokens in response
-        user_data = CustomUserSerializer(user).data
-        return Response({
-            "user": user_data,
-            "refresh": str(refresh),
-            "access": str(access)
-        })
-
-class CartItemViewSet(viewsets.ModelViewSet):
-    """
-    RESTful API for managing cart items
-    """
-    serializer_class = CartItemSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        return CartItem.objects.filter(cart__user=user)
-
-    def create(self, request, *args, **kwargs):
-        user = request.user
-        menu_item_id = request.data.get("menu_item_id")
-        quantity = int(request.data.get("quantity", 1))
-
-        try:
-            menu_item = MenuItem.objects.get(id=menu_item_id)
-        except MenuItem.DoesNotExist:
-            return Response({"error": "Menu item not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        cart, _ = Cart.objects.get_or_create(user=user)
-        cart_item, created = CartItem.objects.get_or_create(cart=cart, menu_item=menu_item)
-
-        if not created:
-            cart_item.quantity += quantity
-        else:
-            cart_item.quantity = quantity
-        cart_item.save()
-
-        return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
-
-    def update(self, request, pk=None, *args, **kwargs):
-        """
-        Update quantity of a cart item
-        """
-        try:
-            cart_item = self.get_queryset().get(id=pk)
-            print('cart;', cart_item)
-        except CartItem.DoesNotExist:
-            return Response({"error": "Cart item not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        cart_item.quantity = int(request.data.get("quantity", cart_item.quantity))
-        cart_item.save()
-        return Response(CartItemSerializer(cart_item).data)
-
-    def destroy(self, request, pk=None, *args, **kwargs):
-        """
-        Remove an item from cart
-        """
-        try:
-            cart_item = self.get_queryset().get(id=pk)
-            cart_item.delete()
-            return Response({"message": "Item removed"}, status=status.HTTP_204_NO_CONTENT)
-        except CartItem.DoesNotExist:
-            return Response({"error": "Cart item not found"}, status=status.HTTP_404_NOT_FOUND)
-
-    @action(detail=False, methods=["get"])
-    def mycart(self, request):
-        """
-        View entire cart with total
-        """
-        user = request.user
-        try:
-            cart = Cart.objects.get(user=user)
-        except Cart.DoesNotExist:
-            return Response({"items": [], "total": 0})
-        data = Cart.objects.get(user=CustomUser.objects.get(username="akshat1")).total()
-        return Response({
-            "items": 'items',
-            "total": str(data),
-        })
-        
-
-        return Response({
-            "items": items,
-            "total": str(total),
-        })
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def me(request):
-    serializer = CustomUserSerializer(request.user)
-    return Response(serializer.data)
-
-def home(request):
-    return HttpResponse("Hello, Akshat! Django is running.")
-
-@api_view(['GET'])
-def menu_by_category(request):
-    categories = Category.objects.prefetch_related('items').all()
-    serializer = CategorySerializer(categories, many=True)
-    return Response(serializer.data)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def CartViewSet(request):
-    print(request.user)
-    cart = Cart.objects.get(user=CustomUser.objects.get(username=request.user))
-    serializer = CartSerializer(cart)
-    return Response(serializer.data)   # returns JSON
-
-@api_view(['GET'])
-def menu_items(request):
-    data = list(MenuItem.objects.values())
-    return Response(data)
-
-@api_view(['GET'])
-def test(request):
-    data = Cart.objects.get(user=CustomUser.objects.get(username="akshat1")).total()
-    return Response(data)
+        {
+            "id": 10,
+            "type": "category_grid",
+            "title": "🍱 Most Searched",
+            "color_theme_name": 'discover vibe',
+            "gridCol": 3,
+            "overflowX": False,
+            "items": [
+                {
+                    "sub_cat": "Households", "items": [
+                        { "name": "Noodles", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Pizza", "image": "/test_img/nmk14.png" },
+                        { "name": "Juices", "image": "/test_img/nmk6.jpeg" },
+                        { "name": "Pizza", "image": "/test_img/nmk10.jpeg" },
+                        { "name": "Noodles", "image": "/test_img/nmk12.webp" },
+                        { "name": "Pizza", "image": "/test_img/nmk13.jpg" },
+                        { "name": "Juices", "image": "/test_img/bs2.webp" },
+                        { "name": "Pizza", "image": "/test_img/bs2.webp" },
+                        { "name": "Juices", "image": "/test_img/nmk15.webp" },
+                        { "name": "Juices", "image": "/test_img/nmk9.webp" },
+                    ],
+                }, {
+                    "sub_cat": "Households", "items": [
+                        { "name": "Noodles", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Pizza", "image": "/test_img/nmk14.png" },
+                        { "name": "Juices", "image": "/test_img/nmk6.jpeg" },
+                        { "name": "Pizza", "image": "/test_img/nmk10.jpeg" },
+                        { "name": "Noodles", "image": "/test_img/nmk12.webp" },
+                        { "name": "Pizza", "image": "/test_img/nmk13.jpg" },
+                        { "name": "Juices", "image": "/test_img/bs2.webp" },
+                        { "name": "Pizza", "image": "/test_img/bs2.webp" },
+                        { "name": "Juices", "image": "/test_img/nmk15.webp" },
+                        { "name": "Juices", "image": "/test_img/nmk9.webp" },
+                    ],
+                }, {
+                    "sub_cat": "Households", "items": [
+                        { "name": "Noodles", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Pizza", "image": "/test_img/nmk14.png" },
+                        { "name": "Juices", "image": "/test_img/nmk6.jpeg" },
+                        { "name": "Pizza", "image": "/test_img/nmk10.jpeg" },
+                        { "name": "Noodles", "image": "/test_img/nmk12.webp" },
+                        { "name": "Pizza", "image": "/test_img/nmk13.jpg" },
+                        { "name": "Juices", "image": "/test_img/bs2.webp" },
+                        { "name": "Pizza", "image": "/test_img/bs2.webp" },
+                        { "name": "Juices", "image": "/test_img/nmk15.webp" },
+                        { "name": "Juices", "image": "/test_img/nmk9.webp" },
+                    ],
+                }
+            ]
+        },
+        {
+            "id": 11,
+            "type": "category_grid",
+            "title": "🍱 Get upto 70% off || Deals Perfect for You",
+            "color_theme_name": 'woman fav',
+            "gridCol": 3,
+            "overflowX": False,
+            "items": [
+                {
+                    "sub_cat": "Households", "items": [
+                        { "name": "Noodles", "image": "/test_img/nmk12.webp" },
+                        { "name": "Pizza", "image": "/test_img/nmk13.jpg" },
+                        { "name": "Juices", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Pizza", "image": "/test_img/nmk14.jpeg" },
+                        { "name": "Juices", "image": "/test_img/nmk14.png" },
+                        { "name": "Juices", "image": "/test_img/nmk15.webp" },
+                    ],
+                },
+            ],
+        },
+    ]
+        return Response(sections)

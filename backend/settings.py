@@ -34,8 +34,8 @@ INSTALLED_APPS = [
 ]
 # ASGI_APPLICATION = "food99api.asgi.application"
 
-# Tell Django to use the custom user model
-AUTH_USER_MODEL = 'food99api.CustomUser'
+# # Tell Django to use the custom user model
+# AUTH_USER_MODEL = 'food99api.CustomUser'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

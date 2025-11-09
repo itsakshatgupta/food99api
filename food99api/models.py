@@ -1,97 +1,81 @@
 from django.db import models
-from django.db.models import Sum, F
-from django.contrib.auth.models import AbstractUser
-from django.conf import settings   # <-- for CustomUser reference
-from cloudinary.models import CloudinaryField
+from django.contrib.auth.models import User
 
-# Custom User
-class CustomUser(AbstractUser):
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    profile_image = CloudinaryField('image', folder='profile_images/', blank=True, null=True)
+class Seller(models.Model):
+    BUSINESS_TYPES = [
+        ('manufacturer', 'Manufacturer'),
+        ('distributor', 'Distributor'),
+        ('agency', 'Agency'),
+        ('retailer', 'Retailer'),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='seller_profile')
+    company_name = models.CharField(max_length=150)
+    business_type = models.CharField(max_length=30, choices=BUSINESS_TYPES)
+    gst_number = models.CharField(max_length=20, blank=True, null=True)
+    address = models.TextField(blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    pincode = models.CharField(max_length=10, blank=True)
+    whatsapp_number = models.CharField(max_length=15, blank=True)
+    logo = models.ImageField(upload_to='sellers/logos/', blank=True, null=True)
+    verified = models.BooleanField(default=False)
+    rating = models.FloatField(default=0.0)
+    total_reviews = models.IntegerField(default=0)
+    joined_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.username
-
-# Menu Category 
-class Category(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+        return self.company_name
+class Product(models.Model):
+    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, related_name='products')
+    name = models.CharField(max_length=150)
     description = models.TextField(blank=True)
-
-    class Meta:
-        verbose_name_plural = "Categories"
-
-    def __str__(self):
-        return self.name
-
-# Menu Variant
-class MenuVariant(models.Model):
-    name = models.CharField(max_length=100)
-    price = models.DecimalField(max_digits=8, decimal_places=2)
-    extra = models.TextField()
-
-    def __str__(self):
-        return self.name
-
-# Menu Item
-class MenuItem(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    price = models.DecimalField(max_digits=8, decimal_places=2)
-    tags = models.JSONField(default=list)
-    image = CloudinaryField('image', folder='menu_images/', blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='items')
-    variant = models.ManyToManyField(MenuVariant, blank=True)  # <-- updated 
-
-    def __str__(self):
-        return self.name
-    
-# Through model to store price per variant per menu item
-class MenuItemVariant(models.Model):
-    menu_item = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
-    variant = models.ForeignKey(MenuVariant, on_delete=models.CASCADE)
-    price = models.DecimalField(max_digits=8, decimal_places=2)  # price specific to this item+variant
-
-    class Meta:
-        unique_together = ('menu_item', 'variant')  # one variant per item
-
-    def __str__(self):
-        return f"{self.menu_item.name} - {self.variant.name} : {self.price}"
-    
-# Cart
-class Cart(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # <-- updated
-    items = models.ManyToManyField(MenuItem, through='CartItem')
+    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    moq = models.CharField(max_length=50, blank=True, null=True)  # Minimum Order Quantity
+    image = models.ImageField(upload_to='products/images/', blank=True, null=True)
+    category = models.CharField(max_length=100, blank=True)
+    tags = models.JSONField(default=list, blank=True)
+    stock_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
-    def total(self):
-        return self.cartitem_set.aggregate(
-        total=Sum(F("menu_item__price") * F("quantity"))
-        )["total"] or 0
-    
+
+    def __str__(self):
+        return f"{self.name} ({self.seller.company_name})"
+class BuyerProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='buyer_profile')
+    company_name = models.CharField(max_length=150, blank=True)
+    business_type = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    whatsapp_number = models.CharField(max_length=15, blank=True)
+    interested_categories = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         return self.user.username
 
-# Cart Item
-class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
-    menu_item = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
-
-    def __str__(self):
-        return f"{self.quantity} x {self.menu_item.name}"
-
-
-class Order(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
-    order_id = models.CharField(max_length=100, unique=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_status = models.CharField(
+class Message(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
+    content = models.TextField()
+    message_type = models.CharField(
         max_length=20,
-        choices=[("PENDING", "Pending"), ("COMPLETED", "Completed"), ("FAILED", "Failed")],
-        default="PENDING",
+        choices=[('text', 'Text'), ('image', 'Image'), ('enquiry', 'Enquiry')],
+        default='text'
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.order_id} - {self.payment_status}"
+        return f"From {self.sender.username} to {self.receiver.username}"
+class Lead(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
+    seller = models.ForeignKey(Seller, on_delete=models.SET_NULL, null=True)
+    buyer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    enquiry_text = models.TextField(blank=True)
+    source = models.CharField(max_length=50, default='website')  # or 'whatsapp', 'call'
+    status = models.CharField(
+        max_length=20,
+        choices=[('new', 'New'), ('contacted', 'Contacted'), ('closed', 'Closed')],
+        default='new'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)

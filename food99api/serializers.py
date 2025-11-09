@@ -1,80 +1,83 @@
 from rest_framework import serializers
-from .models import MenuItem, Cart, CartItem, MenuItemVariant
-from .models import Category, Order
-from .models import CustomUser
+from django.contrib.auth.models import User
+from .models import Seller, Product, BuyerProfile, Message, Lead
 
-class SignupSerializer(serializers.ModelSerializer):
+
+# ------------------- USER REGISTER -------------------
+class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     class Meta:
-        model = CustomUser
-        fields = ['username', 'email', 'password', 'phone_number', 'profile_image']
+        model = User
+        fields = ['username', 'email', 'password']
 
     def create(self, validated_data):
-        user = CustomUser.objects.create_user(
+        user = User.objects.create_user(
             username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password'],
-            phone_number=validated_data.get('phone_number'),
-            profile_image=validated_data.get('profile_image') 
+            email=validated_data.get('email', ''),
+            password=validated_data['password']
         )
+        # Auto-create BuyerProfile when a user registers
+        BuyerProfile.objects.create(user=user)
         return user
 
-class CustomUserSerializer(serializers.ModelSerializer):
-    profile_image = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = CustomUser
-        fields = ['id', 'username', 'email', 'phone_number', 'profile_image']
 
-    def get_profile_image(self, obj):
-        if obj.profile_image:
-            return obj.profile_image.url  # full Cloudinary URL
-        return None
-
-# Nested serializer for the variant with its specific price
-class MenuItemVariantSerializer(serializers.ModelSerializer):
-    variant_name = serializers.CharField(source='variant.name')  # show variant name
+# ------------------- BUYER -------------------
+class BuyerProfileSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
 
     class Meta:
-        model = MenuItemVariant
-        fields = ['variant_name', 'price']
+        model = BuyerProfile
+        fields = ['id', 'user', 'company_name', 'phone', 'address', 'city', 'state', 'country']
+        
+# --- User Serializer ---
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email']
 
-class MenuItemSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
-    variant = MenuItemVariantSerializer(source='menuitemvariant_set', many=True)
+
+# --- Seller Serializer ---
+class SellerSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    class Meta:
+        model = Seller
+        fields = '__all__'
+
+
+# --- Product Serializer ---
+class ProductSerializer(serializers.ModelSerializer):
+    seller = SellerSerializer(read_only=True)
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+
+# --- Buyer Serializer ---
+class BuyerProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    class Meta:
+        model = BuyerProfile
+        fields = '__all__'
+
+
+# --- Message Serializer ---
+class MessageSerializer(serializers.ModelSerializer):
+    sender = UserSerializer(read_only=True)
+    receiver = UserSerializer(read_only=True)
+    product = ProductSerializer(read_only=True)
 
     class Meta:
-        model = MenuItem
-        fields = ['id', 'name', 'description', 'image', 'price', 'tags', 'variant']
+        model = Message
+        fields = '__all__'
 
-    def get_image(self, obj):
-        if obj.image:
-            return obj.image.url
-        return None
 
-class CategorySerializer(serializers.ModelSerializer):
-    items = MenuItemSerializer(many=True)  # nested items
-
-    class Meta:
-        model = Category
-        fields = ['id', 'name', 'description', 'items']
-
-class CartItemSerializer(serializers.ModelSerializer):
-    menu_item = MenuItemSerializer()  # nested serializer
+# --- Lead Serializer ---
+class LeadSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+    seller = SellerSerializer(read_only=True)
+    buyer = UserSerializer(read_only=True)
 
     class Meta:
-        model = CartItem
-        fields = ['id', 'quantity', 'menu_item']  # no need for 'cart'
-
-class CartSerializer(serializers.ModelSerializer):
-    items = CartItemSerializer(source='cartitem_set', many=True)
-
-    class Meta:
-        model = Cart
-        fields = '__all__'   # includes id, user, created_at, and items
-
-class OrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Order
-        fields = "__all__"
+        model = Lead
+        fields = '__all__'
