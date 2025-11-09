@@ -15,9 +15,9 @@ router.register(r'messages', MessageViewSet)
 router.register(r'leads', LeadViewSet)
 
 urlpatterns = [
-    path('api/home-sections/', HomeSectionsView.as_view(), name='home-sections'),
-    path('api/register/', RegisterView.as_view(), name='register'),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/', include(router.urls)),
+    path('home-sections/', HomeSectionsView.as_view(), name='home-sections'),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('', include(router.urls)),
 ]
