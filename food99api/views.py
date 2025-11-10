@@ -1,4 +1,4 @@
-from requests import Response
+from rest_framework.response import Response
 from rest_framework import viewsets, permissions 
 from .models import CustomUser, Seller, Product, BuyerProfile, Message, Lead
 from .serializers import (
