@@ -34,8 +34,30 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ('username', 'email', 'password', 'user_type', 'phone')
 
     def create(self, validated_data):
+        user_type = validated_data.get('user_type')
         user = CustomUser.objects.create_user(**validated_data)
+        # Auto-create profile based on user_type
+        if user_type == 'seller':
+            Seller.objects.create(user=user, company_name="")  # will update later
+
+        elif user_type == 'buyer':
+            BuyerProfile.objects.create(user=user)
+
         return user
+
+    def update(self, instance, validated_data):
+        user_type = validated_data.get('user_type')
+        
+        if user_type == 'seller':
+            Seller.objects.create(user=instance, company_name="")  # will update later
+            
+        elif user_type == 'buyer':
+            if Seller.objects.exists(user=instance):
+                Seller.objects.delete(user=instance) 
+                BuyerProfile.objects.get_or_create(user=instance)
+            
+        CustomUser.objects.update(**validated_data)
+        return instance
 
 # -------------------------
 # USER SERIALIZER
@@ -78,6 +100,27 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = '__all__'
 
+    def create(self, validated_data):
+        request = self.context['request']
+
+        # remove any seller coming from frontend
+        validated_data.pop('seller', None)
+        
+        seller = Seller.objects.get(user=request.user)
+
+        product = Product.objects.create(
+            seller=seller,
+            **validated_data
+        )
+        return product
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data.pop('seller', None)  # hide seller when sending GET response
+        return data
+
+
+
 
 # -------------------------
 # MESSAGE SERIALIZER
@@ -102,3 +145,26 @@ class LeadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lead
         fields = '__all__'
+        
+from .models import Form, FormField, FormResponse, FormAnswer
+
+class FormFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FormField
+        fields = ['id', 'label', 'type', 'required', 'order']
+        
+class FormSerializer(serializers.ModelSerializer):
+    fields = FormFieldSerializer(many=True)
+
+    class Meta:
+        model = Form
+        fields = ['id', 'title', 'theme', 'fields']
+
+    def create(self, validated_data):
+        fields_data = validated_data.pop("fields")
+        form = Form.objects.create(owner=self.context["request"].user, **validated_data)
+
+        for i, f in enumerate(fields_data):
+            FormField.objects.create(form=form, order=i, **f)
+
+        return form

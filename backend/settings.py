@@ -31,6 +31,8 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'food99api',
 ]
 # ASGI_APPLICATION = "food99api.asgi.application"
@@ -50,6 +52,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
 ROOT_URLCONF = 'backend.urls'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -64,6 +67,13 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,                   # set True if you want new refresh token each time
     "BLACKLIST_AFTER_ROTATION": True,                 # requires blacklist app
 }
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -82,8 +92,22 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
-DATABASES = {
-    'default': {
+DATABASES = {    
+    "default": {},   # will be assigned below
+
+    "local": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "local_db",
+        "USER": "local_user",
+        "PASSWORD": "local_pass",
+        "HOST": "127.0.0.1",
+        "PORT": 3306,
+        "OPTIONS": {
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
+    },
+    
+    "remote": {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
         'USER': 'postgres.zbcwxsihcukcnaxuxodl',
@@ -92,6 +116,26 @@ DATABASES = {
         'PORT': '6543',
     }
 }
+
+import socket
+
+def can_connect(host, port, timeout=2):
+    try:
+        socket.create_connection((host, port), timeout=timeout)
+        return True
+    except:
+        return False
+
+REMOTE_HOST = DATABASES["remote"]["HOST"]
+REMOTE_PORT = DATABASES["remote"]["PORT"]
+
+if can_connect(REMOTE_HOST, REMOTE_PORT):
+    print("📡 Using Remote Database (Supabase)")
+    DATABASES["default"] = DATABASES["remote"]
+else:
+    print("💾 Remote not reachable → Using Local Database")
+    DATABASES["default"] = DATABASES["local"]
+
 
 # Media storage
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

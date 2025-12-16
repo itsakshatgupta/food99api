@@ -25,7 +25,6 @@ class Seller(models.Model):
         ('agency', 'Agency'),
         ('retailer', 'Retailer'),
     ]
-
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='seller_profile')
     company_name = models.CharField(max_length=150)
     business_type = models.CharField(max_length=30, choices=BUSINESS_TYPES)
@@ -43,16 +42,52 @@ class Seller(models.Model):
 
     def __str__(self):
         return self.company_name
+    
+class Category(models.Model):
+    name = models.CharField(max_length=150, unique=True)
+    slug = models.SlugField(max_length=200, unique=True)
+    
+    # parent=null → main category
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        related_name='children',
+        null=True,
+        blank=True
+    )
+    
+    icon = models.ImageField(upload_to='categories/icons/', blank=True, null=True)
+    image = models.ImageField(upload_to='categories/images/', blank=True, null=True)
+    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "Categories"
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def is_main_category(self):
+        return self.parent is None
+
 class Product(models.Model):
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, related_name='products')
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     moq = models.CharField(max_length=50, blank=True, null=True)  # Minimum Order Quantity
+    model_no = models.CharField(max_length=50, blank=True, null=True)  # Minimum Order Quantity
+    warranty_detail = models.CharField(max_length=50, blank=True, null=True)  # Minimum Order Quantity
     image = models.ImageField(upload_to='products/images/', blank=True, null=True)
-    category = models.CharField(max_length=100, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     tags = models.JSONField(default=list, blank=True)
-    stock_available = models.BooleanField(default=True)
+    delivery_available = models.CharField(max_length=50, blank=True, null=True)
+    views = models.CharField(max_length=50, default=0)
+    enquires = models.CharField(max_length=50, default=0)
+    status = models.CharField(max_length=50, default='Active')
+    installation_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -96,3 +131,27 @@ class Lead(models.Model):
         default='new'
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+# models.py
+
+class Form(models.Model):
+    owner = models.ForeignKey(Seller, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    theme = models.CharField(max_length=50, default="light")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class FormField(models.Model):
+    form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="fields")
+    label = models.CharField(max_length=255)
+    type = models.CharField(max_length=20)  # text, number, image
+    required = models.BooleanField(default=False)
+    order = models.IntegerField(default=0)
+
+class FormResponse(models.Model):
+    form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="responses")
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+class FormAnswer(models.Model):
+    response = models.ForeignKey(FormResponse, on_delete=models.CASCADE, related_name="answers")
+    field = models.ForeignKey(FormField, on_delete=models.CASCADE)
+    value = models.TextField(null=True, blank=True)
