@@ -93,7 +93,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 DATABASES = {    
-    "default": {},   # will be assigned below
+    # "default": {},   # will be assigned below
 
     "local": {
         "ENGINE": "django.db.backends.mysql",
@@ -119,22 +119,22 @@ DATABASES = {
 
 import socket
 
-def can_connect(host, port, timeout=2):
-    try:
-        socket.create_connection((host, port), timeout=timeout)
-        return True
-    except:
-        return False
+# def can_connect(host, port, timeout=2):
+#     try:
+#         socket.create_connection((host, port), timeout=timeout)
+#         return True
+#     except:
+#         return False
 
-REMOTE_HOST = DATABASES["remote"]["HOST"]
-REMOTE_PORT = DATABASES["remote"]["PORT"]
+# REMOTE_HOST = DATABASES["remote"]["HOST"]
+# REMOTE_PORT = DATABASES["remote"]["PORT"]
 
-if can_connect(REMOTE_HOST, REMOTE_PORT):
-    print("📡 Using Remote Database (Supabase)")
-    DATABASES["default"] = DATABASES["remote"]
-else:
-    print("💾 Remote not reachable → Using Local Database")
-    DATABASES["default"] = DATABASES["local"]
+# if can_connect(REMOTE_HOST, REMOTE_PORT):
+#     print("📡 Using Remote Database (Supabase)")
+#     DATABASES["default"] = DATABASES["remote"]
+# else:
+#     print("💾 Remote not reachable → Using Local Database")
+#     DATABASES["default"] = DATABASES["local"]
 
 
 # Media storage
