@@ -34,10 +34,11 @@ class RegisterView(viewsets.ModelViewSet):
         # For testing only (later store in DB)
         # Send Email using SendGrid
         message = Mail(
-            from_email="otp@tradeb2b.online",  # must be verified in SendGrid
+            from_email="noreply@tradeb2b.online",  # must be verified in SendGrid
             to_emails=user.email,
-            subject="Your OTP Code",
-            html_content=f"<strong>Your OTP is {otp}</strong>"
+            subject=f"{user.username}, Your OTP Code",
+            html_content=f"<strong>Your OTP is {otp}</strong>",
+            plain_text_content=f"</br> This is auto genrated email, kindly do not use it for reply, In case of contact you can call on <bold> customer care: +919696607224 </bold> </br> Note:- This platform is under devloping by aksh*******nov@tradeb2b.online. "
         )
         try:
             sg = SendGridAPIClient("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")
