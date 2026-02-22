@@ -33,7 +33,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'sellers',
     'food99api',
+    'lead',
+    'message',
 ]
 # ASGI_APPLICATION = "food99api.asgi.application"
 
@@ -57,7 +60,12 @@ ROOT_URLCONF = 'backend.urls'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_FILTER_BACKENDS':[
+        'django_filter.rest_framework.DjangoFilterBackend',
+        'rest_framework.filter.SearchFilter',
+        'rest_framework.filter.OrderingFilter'
+    ]    
 }
 from datetime import timedelta
 
@@ -98,16 +106,16 @@ DATABASES = {
     "local": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "local_db",
-        "USER": "local_user",
+        "USER": "meadmin",
         "PASSWORD": "local_pass",
-        "HOST": "127.0.0.1",
+        "HOST": "localhost",
         "PORT": 3306,
-        "OPTIONS": {
-            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
-        }
+        # "OPTIONS": {
+        #     "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+        # }
     },
     
-    "default": {
+    "remote": {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
         'USER': 'postgres.zbcwxsihcukcnaxuxodl',
@@ -119,22 +127,22 @@ DATABASES = {
 
 import socket
 
-# def can_connect(host, port, timeout=2):
-#     try:
-#         socket.create_connection((host, port), timeout=timeout)
-#         return True
-#     except:
-#         return False
+def can_connect(host, port, timeout=2):
+    try:
+        socket.create_connection((host, port), timeout=timeout)
+        return True
+    except:
+        return False
 
-# REMOTE_HOST = DATABASES["remote"]["HOST"]
-# REMOTE_PORT = DATABASES["remote"]["PORT"]
+REMOTE_HOST = DATABASES["remote"]["HOST"]
+REMOTE_PORT = DATABASES["remote"]["PORT"]
 
-# if can_connect(REMOTE_HOST, REMOTE_PORT):
-#     print("📡 Using Remote Database (Supabase)")
-#     DATABASES["default"] = DATABASES["remote"]
-# else:
-#     print("💾 Remote not reachable → Using Local Database")
-#     DATABASES["default"] = DATABASES["local"]
+if can_connect(REMOTE_HOST, REMOTE_PORT):
+    print("📡 Using Remote Database (Supabase)")
+    DATABASES["default"] = DATABASES["remote"]
+else:
+    print("💾 Remote not reachable → Using Local Database")
+    DATABASES["default"] = DATABASES["local"]
 
 
 # Media storage

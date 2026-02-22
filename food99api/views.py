@@ -1,24 +1,59 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets, permissions
-from rest_framework.permissions import IsAuthenticated  
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import CustomUser, Seller, Product, BuyerProfile, Message, Lead
+from .models import CustomUser, BuyerProfile
 from .serializers import (
-    UserSerializer, SellerSerializer, ProductSerializer,
-    BuyerProfileSerializer, MessageSerializer, LeadSerializer
+    UserSerializer, BuyerProfileSerializer
 )
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from rest_framework.decorators import action
-from rest_framework import generics
 from .serializers import RegisterSerializer
 from .models import CustomUser
 from rest_framework.views import APIView
+from sellers.models import Seller
+from lead.permissions import IsSeller
+from food99api.models import BuyerProfile
+from rest_framework.decorators import action
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+import random
 
 class RegisterView(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = RegisterSerializer
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # Save user (inactive until OTP verified - optional)
+        user = serializer.save(is_active=False)
+        # Generate OTP
+        otp = random.randint(100000, 999999)
+        # For testing only (later store in DB)
+        # Send Email using SendGrid
+        message = Mail(
+            from_email="otp@tradeb2b.online",  # must be verified in SendGrid
+            to_emails=user.email,
+            subject="Your OTP Code",
+            html_content=f"<strong>Your OTP is {otp}</strong>"
+        )
+        try:
+            sg = SendGridAPIClient("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")
+            sg.send(message)
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(
+            {
+                "message": "User registered. OTP sent to email.",
+                "otp": otp  # ⚠️ remove in production
+            },
+            status=status.HTTP_201_CREATED
+        )
     # def partial_update(self, request, *args, **kwargs):
     #     return super().partial_update(request, *args, **kwargs)
 
@@ -42,16 +77,23 @@ class LogoutView(APIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.AllowAny]
-
-
-# -------------------------
-# SELLER CRUD
-# -------------------------
-class SellerViewSet(viewsets.ModelViewSet):
-    queryset = Seller.objects.all()
-    serializer_class = SellerSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        print(user.id)
+        return User.objects.filter(id=user.id, username=user.username)
+    
+    @action(detail=False, methods=['GET'], permission_classes=[permissions.IsAuthenticated, IsSeller])
+    def search_(self, request):
+        user_queryset = BuyerProfile.objects.filter(user__user_type="buyer")
+        serializer = BuyerProfileSerializer(
+            user_queryset,
+            many=True,
+            context={"request":request}            
+        )
+        return Response(serializer.data)
+              
 
 
 # -------------------------
@@ -63,39 +105,6 @@ class BuyerProfileViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
-# -------------------------
-# PRODUCT CRUD
-# -------------------------
-class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.all().order_by('-created_at')
-    serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    def perform_create(self, serializer):
-        # This injects the currently logged-in user (request.user) 
-        # as the 'seller' before saving the product. 
-        serializer.save(seller=self.request.user)
-    def get_queryset(self):
-        print('s___:', self.request.user)
-        seller = Seller.objects.get(user=self.request.user)
-        print('s:', seller.joined_on)
-        return Product.objects.filter(seller=seller).order_by('-created_at')
-
-# -------------------------
-# MESSAGE CRUD
-# -------------------------
-class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.all().order_by('-created_at')
-    serializer_class = MessageSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-
-# -------------------------
-# LEAD CRUD
-# -------------------------
-class LeadViewSet(viewsets.ModelViewSet):
-    queryset = Lead.objects.all().order_by('-created_at')
-    serializer_class = LeadSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer

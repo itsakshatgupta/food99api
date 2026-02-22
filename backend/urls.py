@@ -23,6 +23,9 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('food99api.urls')),
+    path('api/m/', include('message.urls')),
+    path('api/s/', include('sellers.urls')),
+    path('api/l/', include('lead.urls')),
 ]
 # Serve media files during development
 if settings.DEBUG:

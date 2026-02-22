@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import CustomUser, Seller, Product, BuyerProfile, Message, Lead
+from .models import CustomUser, BuyerProfile
+from sellers.models import Seller
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -45,38 +46,13 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         return user
 
-    def update(self, instance, validated_data):
-        user_type = validated_data.get('user_type')
-        
-        if user_type == 'seller':
-            Seller.objects.create(user=instance, company_name="")  # will update later
-            
-        elif user_type == 'buyer':
-            if Seller.objects.exists(user=instance):
-                Seller.objects.delete(user=instance) 
-                BuyerProfile.objects.get_or_create(user=instance)
-            
-        CustomUser.objects.update(**validated_data)
-        return instance
-
 # -------------------------
 # USER SERIALIZER
 # -------------------------
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'phone', 'user_type', 'is_verified']
-
-
-# -------------------------
-# SELLER SERIALIZER
-# -------------------------
-class SellerSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
-
-    class Meta:
-        model = Seller
-        fields = '__all__'
+        fields = ['id', 'username', 'email', 'user_type', 'is_verified']
 
 
 # -------------------------
@@ -90,62 +66,8 @@ class BuyerProfileSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-# -------------------------
-# PRODUCT SERIALIZER
-# -------------------------
-class ProductSerializer(serializers.ModelSerializer):
-    seller = SellerSerializer(read_only=True)
 
-    class Meta:
-        model = Product
-        fields = '__all__'
-
-    def create(self, validated_data):
-        request = self.context['request']
-
-        # remove any seller coming from frontend
-        validated_data.pop('seller', None)
-        
-        seller = Seller.objects.get(user=request.user)
-
-        product = Product.objects.create(
-            seller=seller,
-            **validated_data
-        )
-        return product
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data.pop('seller', None)  # hide seller when sending GET response
-        return data
-
-
-
-
-# -------------------------
-# MESSAGE SERIALIZER
-# -------------------------
-class MessageSerializer(serializers.ModelSerializer):
-    sender = UserSerializer(read_only=True)
-    receiver = UserSerializer(read_only=True)
-
-    class Meta:
-        model = Message
-        fields = '__all__'
-
-
-# -------------------------
-# LEAD SERIALIZER
-# -------------------------
-class LeadSerializer(serializers.ModelSerializer):
-    product = ProductSerializer(read_only=True)
-    seller = SellerSerializer(read_only=True)
-    buyer = UserSerializer(read_only=True)
-
-    class Meta:
-        model = Lead
-        fields = '__all__'
-        
+     
 from .models import Form, FormField, FormResponse, FormAnswer
 
 class FormFieldSerializer(serializers.ModelSerializer):

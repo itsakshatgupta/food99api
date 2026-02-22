@@ -1,37 +1,40 @@
 {
-  "python.analysis.typeCheckingMode": "off",
-  "python.analysis.autoImportCompletions": false,
-  "python.languageServer": "None",
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python-envs.pythonProjects": []
+} // {
+//   "python.analysis.typeCheckingMode": "off",
+//   "python.analysis.autoImportCompletions": false,
+//   "python.languageServer": "None",
 
-  "editor.inlineSuggest.enabled": false,
-  "editor.formatOnSave": false,
-  "editor.codeActionsOnSave": {},
+//   "editor.inlineSuggest.enabled": false,
+//   "editor.formatOnSave": false,
+//   "editor.codeActionsOnSave": {},
 
-  "git.enabled": true,
-  "search.followSymlinks": false,
+//   "git.enabled": true,
+//   "search.followSymlinks": false,
 
-  "files.watcherExclude": {
-    "**/migrations/**": true,
-    "**/__pycache__/**": true,
-    "**/*.sqlite3": true
-  },
+//   "files.watcherExclude": {
+//     "**/migrations/**": true,
+//     "**/__pycache__/**": true,
+//     "**/*.sqlite3": true
+//   },
 
-  "python.terminal.activateEnvironment": false,
-  "python.formatting.provider": "none",
-  "python.linting.enabled": false,
-  "python.envFile": "",
+//   "python.terminal.activateEnvironment": false,
+//   "python.formatting.provider": "none",
+//   "python.linting.enabled": false,
+//   "python.envFile": "",
 
-  "workbench.colorTheme": "Default Dark+",
+//   "workbench.colorTheme": "Default Dark+",
 
-  "extensions.autoUpdate": false,
-  "extensions.autoCheckUpdates": false,
-  "extensions.ignoreRecommendations": true,
+//   "extensions.autoUpdate": false,
+//   "extensions.autoCheckUpdates": false,
+//   "extensions.ignoreRecommendations": true,
 
-  "liveServer.settings.port": 0,
-  "liveServer.settings.NoBrowser": true,
-  "liveServer.settings.donotVerifyTags": true,
+//   "liveServer.settings.port": 0,
+//   "liveServer.settings.NoBrowser": true,
+//   "liveServer.settings.donotVerifyTags": true,
 
-  "remote.extensionKind": {
-    "*": "ui"
-  }
-}
+//   "remote.extensionKind": {
+//     "*": "ui"
+//   }
+// }
