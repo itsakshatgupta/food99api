@@ -50,7 +50,7 @@ class RegisterView(viewsets.ModelViewSet):
         return Response(
             {
                 "message": "User registered. OTP sent to email.",
-                "otp": otp  # ⚠️ remove in production
+                "otp": "123"  # ⚠️ remove in production
             },
             status=status.HTTP_201_CREATED
         )
