@@ -20,7 +20,7 @@ from rest_framework.decorators import action
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import random
-
+import os
 class RegisterView(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = RegisterSerializer
@@ -41,7 +41,7 @@ class RegisterView(viewsets.ModelViewSet):
             plain_text_content=f"</br> This is auto genrated email, kindly do not use it for reply, In case of contact you can call on <bold> customer care: +919696607224 </bold> </br> Note:- This platform is under devloping by aksh*******nov@tradeb2b.online. "
         )
         try:
-            sg = SendGridAPIClient("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")
+            sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
             sg.send(message)
         except Exception as e:
             return Response(
