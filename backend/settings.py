@@ -127,17 +127,13 @@ DATABASES = {
 
 import socket
 
-def can_connect(host, port, timeout=2):
+def can_connect():
     try:
-        socket.create_connection((host, port), timeout=timeout)
         return True
     except:
         return False
 
-REMOTE_HOST = DATABASES["remote"]["HOST"]
-REMOTE_PORT = DATABASES["remote"]["PORT"]
-
-if can_connect(REMOTE_HOST, REMOTE_PORT):
+if can_connect():
     print("📡 Using Remote Database (Supabase)")
     DATABASES["default"] = DATABASES["remote"]
 else:
