@@ -103,19 +103,19 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {    
     # "default": {},   # will be assigned below
 
-    "local": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "local_db",
-        "USER": "meadmin",
-        "PASSWORD": "local_pass",
-        "HOST": "localhost",
-        "PORT": 3306,
-        # "OPTIONS": {
-        #     "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
-        # }
-    },
+    # "local": {
+    #     "ENGINE": "django.db.backends.mysql",
+    #     "NAME": "local_db",
+    #     "USER": "meadmin",
+    #     "PASSWORD": "local_pass",
+    #     "HOST": "localhost",
+    #     "PORT": 3306,
+    #     # "OPTIONS": {
+    #     #     "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+    #     # }
+    # },
     
-    "remote": {
+    "default": {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
         'USER': 'postgres.zbcwxsihcukcnaxuxodl',
@@ -125,20 +125,20 @@ DATABASES = {
     }
 }
 
-import socket
+# import socket
 
-def can_connect():
-    try:
-        return True
-    except:
-        return False
+# def can_connect():
+#     try:
+#         return True
+#     except:
+#         return False
 
-if can_connect():
-    print("📡 Using Remote Database (Supabase)")
-    DATABASES["default"] = DATABASES["remote"]
-else:
-    print("💾 Remote not reachable → Using Local Database")
-    DATABASES["default"] = DATABASES["local"]
+# if can_connect():
+#     print("📡 Using Remote Database (Supabase)")
+#     DATABASES["default"] = DATABASES["remote"]
+# else:
+#     print("💾 Remote not reachable → Using Local Database")
+#     DATABASES["default"] = DATABASES["local"]
 
 
 # Media storage
