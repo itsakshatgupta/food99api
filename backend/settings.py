@@ -99,6 +99,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
+TIME_ZONE = "Asia/Kolkata"
+USE_TZ = True
+
 # Database
 DATABASES = {    
     # "default": {},   # will be assigned below
@@ -116,12 +119,12 @@ DATABASES = {
     # },
     
     "default": {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres.zbcwxsihcukcnaxuxodl',
-        'PASSWORD': 'akshatgupta5555',
-        'HOST': 'aws-1-ap-south-1.pooler.supabase.com',
-        'PORT': '6543',
+        'ENGINE': os.getenv("DB_ENGINE"),
+        'NAME': os.getenv("DB_NAME"),
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST': os.getenv("DB_HOST"),
+        'PORT': os.getenv("DB_PORT"),
     }
 }
 

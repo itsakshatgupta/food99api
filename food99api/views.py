@@ -1,9 +1,10 @@
 from rest_framework.response import Response
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import CustomUser, BuyerProfile
+from .models import CustomUser, BuyerProfile, Otp
 from .serializers import (
     UserSerializer, BuyerProfileSerializer
 )
@@ -19,6 +20,7 @@ from food99api.models import BuyerProfile
 from rest_framework.decorators import action
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from rest_framework import status
 import random
 import os
 class RegisterView(viewsets.ModelViewSet):
@@ -37,12 +39,37 @@ class RegisterView(viewsets.ModelViewSet):
             from_email="noreply@tradeb2b.online",  # must be verified in SendGrid
             to_emails=user.email,
             subject=f"{user.username}, Your OTP Code",
-            html_content=f"<strong>Your OTP is {otp}</strong>",
-            plain_text_content=f"</br> This is auto genrated email, kindly do not use it for reply, In case of contact you can call on <bold> customer care: +919696607224 </bold> </br> Note:- This platform is under devloping by aksh*******nov@tradeb2b.online. "
+            
+            plain_text_content=(
+                f"Hi {user.username},\n\n"
+                f"Your OTP is {otp}. It is valid for 10 minutes.\n\n"
+                "Please enter this code to verify your email and activate your account.\n\n"
+                "If you did not request this, please ignore this email.\n\n"
+                "Customer Care: +91 9696607224\n"
+                "This is an auto-generated email. Please do not reply."
+            ),
+        
+            html_content=f"""
+                <p>Hi {user.username},</p>
+                <p><strong>Your OTP is {otp}</strong></p>
+                <p>This code is valid for <strong>10 minutes</strong>.</p>
+                <p>Please enter this code to verify your email and activate your account.</p>
+                <p>If you did not request this, please ignore this email.</p>
+                <br>
+                <p><strong>Customer Care:</strong> +91 9696607224</p>
+                <p style="color:gray; font-size:12px;">
+                    This is an auto-generated email. Please do not reply.
+                </p>
+            """
         )
         try:
             sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
-            sg.send(message)
+            from .models import Otp
+            from django.db import transaction
+            
+            with transaction.atomic():
+                otp_obj = Otp.objects.create(user=user, code=str(otp), expires_at=timezone.now() + timezone.timedelta(minutes=10))
+                sg.send(message)
         except Exception as e:
             return Response(
                 {"error": str(e)},
@@ -51,12 +78,28 @@ class RegisterView(viewsets.ModelViewSet):
         return Response(
             {
                 "message": "User registered. OTP sent to email.",
-                "otp": "123"  # ⚠️ remove in production
+                "otp_uuid": otp_obj.uuid  # ⚠️ remove in production
             },
             status=status.HTTP_201_CREATED
         )
     # def partial_update(self, request, *args, **kwargs):
     #     return super().partial_update(request, *args, **kwargs)
+
+class VerifyOtpView(APIView):
+    def post(self, request, otp_uuid, email, *args, **kwargs):
+        code = request.data.get("otp")
+        try:
+            user = CustomUser.objects.get(email=email)
+            otp_obj = Otp.objects.filter(user=user, uuid=otp_uuid, code=code).first()
+            if otp_obj and otp_obj.expires_at > timezone.now():
+                user.is_active = True
+                user.save()
+                otp_obj.delete()  # OTP can be used only once
+                return Response("success")
+            else:
+                return Response({"error": "Invalid or expired OTP."}, status=400)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "User with this email does not exist."}, status=404)
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
