@@ -63,13 +63,22 @@ class RegisterView(viewsets.ModelViewSet):
             """
         )
         try:
-            sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
+            # sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
             from .models import Otp
             from django.db import transaction
             
-            with transaction.atomic():
-                otp_obj = Otp.objects.create(user=user, code=str(otp), expires_at=timezone.now() + timezone.timedelta(minutes=10))
+            def send_otp_email():
+                sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
                 sg.send(message)
+
+            with transaction.atomic():
+                otp_obj = Otp.objects.create(
+                    user=user,
+                    code=str(otp),
+                    expires_at=timezone.now() + timezone.timedelta(minutes=10)
+                )
+
+                transaction.on_commit(send_otp_email)
         except Exception as e:
             return Response(
                 {"error": str(e)},
