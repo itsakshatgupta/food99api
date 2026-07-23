@@ -1,0 +1,176 @@
+# Cloudinary configuration
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+
+from pathlib import Path
+import os
+from django_filters.conf import settings
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
+# DEBUG = os.getenv("DEBUG", "False") == "True"D
+DEBUG=True
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
+
+INSTALLED_APPS = [
+    # "daphne",   # ASGI server
+    "channels",
+    'corsheaders',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'cloudinary',
+    'cloudinary_storage',
+    'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'sellers',
+    'food99api',
+    'lead',
+    'message',
+]
+# ASGI_APPLICATION = "food99api.asgi.application"
+
+# Tell Django to use the custom user model
+AUTH_USER_MODEL = 'food99api.CustomUser'
+
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    "food99api.middleware.DisableCSRFMiddleware",  # add here
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+
+ROOT_URLCONF = 'backend.urls'
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_FILTER_BACKENDS':[
+        'django_filter.rest_framework.DjangoFilterBackend',
+        'rest_framework.filter.SearchFilter',
+        'rest_framework.filter.OrderingFilter'
+    ]    
+}
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),   # default: 5 minutes
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),     # default: 1 day
+    "ROTATE_REFRESH_TOKENS": False,                   # set True if you want new refresh token each time
+    "BLACKLIST_AFTER_ROTATION": True,                 # requires blacklist app
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'backend.wsgi.application'
+
+TIME_ZONE = "Asia/Kolkata"
+USE_TZ = True
+
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+# GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+# Database
+DATABASES = {    
+    # "default": {},   # will be assigned below
+
+    # "local": {
+    #     "ENGINE": "django.db.backends.mysql",
+    #     "NAME": "local_db",
+    #     "USER": "meadmin",
+    #     "PASSWORD": "local_pass",
+    #     "HOST": "localhost",
+    #     "PORT": 3306,
+    #     # "OPTIONS": {
+    #     #     "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+    #     # }
+    # },
+    
+    "default": {
+        'ENGINE': os.getenv("DB_ENGINE"),
+        'NAME': os.getenv("DB_NAME"),
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST': os.getenv("DB_HOST"),
+        'PORT': os.getenv("DB_PORT"),
+    }
+}
+
+# import socket
+
+# def can_connect():
+#     try:
+#         return True
+#     except:
+#         return False
+
+# if can_connect():
+#     print("📡 Using Remote Database (Supabase)")
+#     DATABASES["default"] = DATABASES["remote"]
+# else:
+#     print("💾 Remote not reachable → Using Local Database")
+#     DATABASES["default"] = DATABASES["local"]
+
+settings.brevo_ID = os.getenv("brevo_ID")
+settings.GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+settings.X_CLIENT_ID = os.getenv("X_CLIENT_ID")
+# Media storage
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# Cloudinary settings
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dbe8vybbp',
+    'API_KEY': '949178684912937',
+    'API_SECRET': 'aIknh9wAy6uRaCE_uA6J8uMGpoY',
+}
+# CASHFREE_APP_ID='TEST10780741c8ed77d4335970bc544314708701'
+# CASHFREE_SECRET_KEY='cfsk_ma_test_8469dc1fc0f34e541aab6b56c4bd3842_9b7b3ff5'
+CASHFREE_APP_ID = os.environ.get('CASHFREE_APP_ID')
+CASHFREE_SECRET_KEY = os.environ.get('CASHFREE_SECRET_KEY')
+CASHFREE_API_URL = 'https://api.cashfree.com/pg'
+
+# Static & Media
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+# MEDIA_URL = "/media/"
+# MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ALLOW_ALL_ORIGINS = True
